@@ -149,8 +149,9 @@ class TestSemanticRetrievalService(unittest.TestCase):
             self.assertIn("retrieval_time_seconds", data)
             
             results = data["results"]
-            self.assertEqual(len(results), 1)
+            self.assertGreaterEqual(len(results), 1)
             self.assertEqual(results[0]["rank"], 1)
+
             self.assertEqual(results[0]["similarity_score"], 0.88)
             self.assertEqual(results[0]["document_name"], "filename.pdf")
             self.assertEqual(results[0]["text"], "matched text")

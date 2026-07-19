@@ -13,17 +13,17 @@ from app.services.cross_encoder import CrossEncoderService
 
 class TestCrossEncoderService(unittest.TestCase):
     def setUp(self):
-        # 1. Reset singleton instances to ensure complete test isolation
-        CrossEncoderService._instance = None
-        CrossEncoderService._model = None
-        
         self.app = create_app()
         self.app.config['TESTING'] = True
         self.app.config['RERANK_MODEL'] = "mock-cross-encoder"
         self.app.config['RERANK_TOP_K'] = 2
         self.app.config['RERANK_BATCH_SIZE'] = 4
-        
+
+        CrossEncoderService._instance = None
+        CrossEncoderService._model = None
+
         self.app_context = self.app.app_context()
+
         self.app_context.push()
         self.client = self.app.test_client()
 

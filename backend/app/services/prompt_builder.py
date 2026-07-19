@@ -234,10 +234,11 @@ class PromptBuilderService:
         retrieval_results: Optional[List[Union[RetrievalResult, Dict[str, Any]]]] = None,
         template_version: Optional[str] = None,
         max_chunks: Optional[int] = None,
-        max_chars: Optional[int] = None
+        max_chars: Optional[int] = None,
+        conversation_history: Optional[List[Dict[str, Any]]] = None
     ) -> Dict[str, Any]:
         """
-        Builds a structured RAG prompt for an LLM given a user query and reranked evidence.
+        Builds a structured RAG prompt for an LLM given a user query, reranked evidence, and optional conversation history.
         """
         start_time = time.time()
 
@@ -280,7 +281,17 @@ class PromptBuilderService:
                 f"Requested template '{requested_template_ver}' was not found; fell back to 'rag_prompt_v1'."
             )
 
-        # 4. Normalize & Deduplicate evidence chunks (preserving Cross-Encoder rank order)
+        # 4. Format Conversation History if provided
+        history_formatted_str = ""
+        if conversation_history:
+            history_blocks = []
+            for msg in conversation_history:
+                role_title = "User" if msg.get("role") == "user" else "Assistant"
+                history_blocks.append(f"{role_title}: {str(msg.get('content', '')).strip()}")
+            if history_blocks:
+                history_formatted_str = "Conversation History (Previous Turns):\n" + "\n".join(history_blocks) + "\n\n"
+
+        # 5. Normalize & Deduplicate evidence chunks (preserving Cross-Encoder rank order)
         raw_results = retrieval_results or []
         normalized_results = [self._normalize_result(r) for r in raw_results]
         deduped_results = self.deduplicate_and_preserve_order(normalized_results)
@@ -288,7 +299,7 @@ class PromptBuilderService:
         # Slice to max_chunks
         selected_results = deduped_results[:actual_max_chunks]
 
-        # 5. Build Evidence & Metadata blocks
+        # 6. Build Evidence & Metadata blocks
         evidence_blocks = []
         source_docs = set()
         included_chunks = []
@@ -314,6 +325,7 @@ class PromptBuilderService:
                 evidence_blocks.append(chunk_entry)
                 source_docs.add(f"{doc_name} (Page {page_num})")
                 included_chunks.append(item)
+
 
             evidence_str = "\n\n".join(evidence_blocks)
             doc_list_str = "\n".join([f"- {d}" for d in sorted(source_docs)])
@@ -386,5 +398,6 @@ class PromptBuilderService:
             "generation_time_seconds": elapsed_time,
             "truncated": truncated,
             "validation": validation_report,
-            "results": [c.to_dict() for c in included_chunks]
+            "results": [c.to_dict() if hasattr(c, "to_dict") else c for c in included_chunks]
+
         }

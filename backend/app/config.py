@@ -48,6 +48,10 @@ class Config:
     # Caching & Optimization Configuration
     CACHE_ENABLED = os.getenv("CACHE_ENABLED", "True").lower() in ("true", "1", "yes")
 
+    # Conversation Management Configuration
+    MAX_CONVERSATION_TURNS = int(os.getenv("MAX_CONVERSATION_TURNS", 10))
+
+
     # Prompt Builder Configuration
     MAX_CONTEXT_CHUNKS = int(os.getenv("MAX_CONTEXT_CHUNKS", 5))
     MAX_CONTEXT_CHARACTERS = int(os.getenv("MAX_CONTEXT_CHARACTERS", 4000))

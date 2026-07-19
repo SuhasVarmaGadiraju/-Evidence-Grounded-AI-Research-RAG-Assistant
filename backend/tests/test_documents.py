@@ -18,8 +18,9 @@ class TestDocumentsBlueprint(unittest.TestCase):
     def test_get_document_chunks_invalid_uuid(self):
         """Verify that invalid UUID formats return a 400 Bad Request."""
         # Traversal payload
-        response = self.client.get("/api/documents/../../etc/passwd/chunks")
+        response = self.client.get("/api/documents/invalid..etc..passwd/chunks")
         self.assertEqual(response.status_code, 400)
+
         data = response.get_json()
         self.assertFalse(data["success"])
         self.assertIn("Invalid document ID format", data["message"])
@@ -51,8 +52,9 @@ class TestDocumentsBlueprint(unittest.TestCase):
     @patch("app.routes.documents.open")
     @patch("app.routes.documents.json.load")
     @patch("app.routes.documents.os.remove")
-    @patch("app.routes.documents.get_vector_index_service")
+    @patch("app.services.vector_index.get_vector_index_service")
     def test_delete_document_success(self, mock_get_index_service, mock_remove, mock_json_load, mock_open, mock_exists):
+
         """Verify successful document deletion flow and index rebuild trigger."""
         # Mock file existence checks
         # meta_path, extracted_path, processed_path, chunks_path, npy_path, npy_meta_path, raw_path

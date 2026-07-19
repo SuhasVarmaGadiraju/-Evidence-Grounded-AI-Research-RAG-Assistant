@@ -30,7 +30,14 @@ class RetrievalResult:
         self.match_source = match_source
         self.rerank_score = rerank_score
 
+    def __getitem__(self, key: str):
+        return getattr(self, key)
+
+    def __setitem__(self, key: str, value):
+        setattr(self, key, value)
+
     def to_dict(self) -> dict:
+
         """Converts the result model into a standard JSON-serializable dictionary."""
         return {
             "rank": self.rank,
