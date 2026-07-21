@@ -66,11 +66,11 @@ class Config:
 
     # NVIDIA API LLM Generation Configuration
     NVIDIA_BASE_URL = os.getenv("NVIDIA_BASE_URL", "https://integrate.api.nvidia.com/v1")
-    NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "meta/llama-3.1-70b-instruct")
+    NVIDIA_MODEL = os.getenv("NVIDIA_MODEL", "meta/llama-3.1-8b-instruct")
     LLM_TIMEOUT = int(os.getenv("LLM_TIMEOUT", 60))
     LLM_CONNECT_TIMEOUT = int(os.getenv("LLM_CONNECT_TIMEOUT", 10))
     LLM_READ_TIMEOUT = int(os.getenv("LLM_READ_TIMEOUT", 60))
-    LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", 1024))
+    LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", 384))
     LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", 0.2))
     LLM_TOP_P = float(os.getenv("LLM_TOP_P", 0.7))
 

@@ -198,12 +198,11 @@ def chat_endpoint():
     profiler = PipelineProfiler()
     query_hash = hashlib.sha256(clean_query.encode("utf-8")).hexdigest()[:12]
 
-    # Resolve or create session ID
-    if not session_id or not conversation_service.get_session(session_id):
-        session_id = conversation_service.create_session(title=clean_query[:40])
-
-    # Fetch previous conversation history for prompt construction
-    history_messages = conversation_service.get_history(session_id)
+    # Step 0: Session retrieval & history fetching
+    with profiler.profile("session_retrieval"):
+        if not session_id or not conversation_service.get_session(session_id):
+            session_id = conversation_service.create_session(title=clean_query[:40])
+        history_messages = conversation_service.get_history(session_id)
 
     try:
         rerank_service = CrossEncoderService()
@@ -219,13 +218,24 @@ def chat_endpoint():
         if cached_retrieval_payload:
             prompt_result = cached_retrieval_payload["prompt_result"]
             included_chunks = cached_retrieval_payload["included_chunks"]
-            profiler.record_stage("retrieval_and_rerank", 0.0001)
+            profiler.record_stage("hybrid_retrieval", 0.0001)
+            profiler.record_stage("semantic_retrieval", 0.0001)
+            profiler.record_stage("bm25_retrieval", 0.0001)
+            profiler.record_stage("rrf_merge", 0.0001)
+            profiler.record_stage("cross_encoder", 0.0001)
+            profiler.record_stage("prompt_builder", 0.0001)
         else:
             with profiler.profile("hybrid_retrieval"):
                 hybrid_service = HybridRetrievalService()
                 candidate_pool_limit = current_app.config.get("RERANK_CANDIDATE_POOL", 20)
                 candidate_top_k = max(actual_top_k, candidate_pool_limit)
                 candidates = hybrid_service.search(clean_query, top_k=candidate_top_k)
+
+            # Record sub-stage timings from hybrid retriever
+            if hasattr(hybrid_service, "last_profile"):
+                profiler.record_stage("semantic_retrieval", hybrid_service.last_profile.get("semantic_retrieval", 0.0))
+                profiler.record_stage("bm25_retrieval", hybrid_service.last_profile.get("bm25_retrieval", 0.0))
+                profiler.record_stage("rrf_merge", hybrid_service.last_profile.get("rrf_merge", 0.0))
 
             with profiler.profile("cross_encoder"):
                 reranked_results = rerank_service.rerank(clean_query, candidates, top_k=actual_top_k)
@@ -271,12 +281,19 @@ def chat_endpoint():
         if cached_llm_response:
             cache_hit = True
             llm_response = cached_llm_response
+            profiler.record_stage("nvidia_prep", 0.0001)
+            profiler.record_stage("nvidia_network", 0.0001)
             profiler.record_stage("llm_generation", 0.0001)
             logger.info(f"LLM Generation CACHE HIT | QueryHash: {query_hash} | Session: {session_id[:8]}")
         else:
-            with profiler.profile("llm_generation"):
+            with profiler.profile("nvidia_prep"):
                 llm_service = LLMService()
+
+            with profiler.profile("llm_generation"):
+                t_net_0 = time.perf_counter()
                 llm_response = llm_service.generate(rendered_prompt)
+                t_net_1 = time.perf_counter()
+                profiler.record_stage("nvidia_network", round(t_net_1 - t_net_0, 4))
 
             if current_app.config.get("CACHE_ENABLED", True):
                 llm_cache.set(llm_cache_key, llm_response)
@@ -304,6 +321,20 @@ def chat_endpoint():
             timing_breakdown = profiler.get_breakdown()
             total_latency = timing_breakdown["total"]
 
+            # Build formatted timing summary string matching Requirement 2
+            formatted_summary = (
+                f"Session Retrieval: {timing_breakdown.get('ms', {}).get('session_retrieval_ms', 0):.2f} ms\n"
+                f"Hybrid Retrieval: {timing_breakdown.get('ms', {}).get('hybrid_retrieval_ms', 0):.2f} ms\n"
+                f"BM25: {timing_breakdown.get('ms', {}).get('bm25_retrieval_ms', 0):.2f} ms\n"
+                f"Semantic: {timing_breakdown.get('ms', {}).get('semantic_retrieval_ms', 0):.2f} ms\n"
+                f"Cross Encoder: {timing_breakdown.get('ms', {}).get('cross_encoder_ms', 0):.2f} ms\n"
+                f"Prompt Builder: {timing_breakdown.get('ms', {}).get('prompt_builder_ms', 0):.2f} ms\n"
+                f"NVIDIA Prep: {timing_breakdown.get('ms', {}).get('nvidia_prep_ms', 0):.2f} ms\n"
+                f"NVIDIA Network: {timing_breakdown.get('ms', {}).get('nvidia_network_ms', 0):.2f} ms\n"
+                f"LLM Generation: {timing_breakdown.get('ms', {}).get('llm_generation_ms', 0):.2f} ms\n"
+                f"Total: {timing_breakdown.get('ms', {}).get('total_ms', 0):.2f} ms"
+            )
+
             response_payload = {
                 "success": True,
                 "session_id": session_id,
@@ -321,6 +352,7 @@ def chat_endpoint():
                 "finish_reason": llm_response.get("finish_reason", "stop"),
                 "conversation_turns": conversation_turns,
                 "timing_breakdown": timing_breakdown,
+                "timing_summary": formatted_summary,
                 "citations": citations,
                 "results": included_chunks
             }

@@ -156,6 +156,13 @@ class HybridRetrievalService(BaseRetriever):
         rrf_latency = time.time() - start_rrf
         total_latency = time.time() - start_total
 
+        self.last_profile = {
+            "semantic_retrieval": round(sem_latency, 4),
+            "bm25_retrieval": round(bm_latency, 4),
+            "rrf_merge": round(merge_latency + rrf_latency, 4),
+            "total_hybrid": round(total_latency, 4)
+        }
+
         # Log detailed execution profile
         logger.info(
             f"Hybrid search completed in {total_latency:.4f}s. Latency profile: "

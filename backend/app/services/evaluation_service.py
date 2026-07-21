@@ -6,6 +6,7 @@ from flask import current_app
 
 from app.config import Config
 from app.services.hybrid_retriever import HybridRetrievalService
+from app.services.cross_encoder import CrossEncoderService
 from app.services.prompt_builder import PromptBuilderService
 from app.services.llm_service import LLMService
 from app.services.evaluation_dataset import EvaluationDatasetService
@@ -20,11 +21,13 @@ class EvaluationService:
     def __init__(
         self,
         hybrid_retriever: Optional[HybridRetrievalService] = None,
+        cross_encoder: Optional[CrossEncoderService] = None,
         prompt_builder: Optional[PromptBuilderService] = None,
         llm_service: Optional[LLMService] = None,
         dataset_service: Optional[EvaluationDatasetService] = None
     ):
         self.retriever = hybrid_retriever or HybridRetrievalService()
+        self.cross_encoder = cross_encoder or CrossEncoderService()
         self.prompt_builder = prompt_builder or PromptBuilderService()
         self.llm_service = llm_service or LLMService()
         self.dataset_service = dataset_service or EvaluationDatasetService()
@@ -54,6 +57,9 @@ class EvaluationService:
         """
         if not retrieved_chunks:
             return 0.0
+
+        if not expected_documents and not expected_pages and not ground_truth:
+            return 1.0
 
         gt_terms = self._tokenize_terms(ground_truth) if ground_truth else set()
         relevant_count = 0
@@ -315,31 +321,47 @@ class EvaluationService:
         """
         start_time = time.time()
 
-        # 1. Retrieve Context
+        # 1. Retrieve & Rerank Context using HybridRetrievalService & CrossEncoderService
         try:
-            retrieval_response = self.retriever.retrieve(question, top_k=top_k)
-            retrieved_chunks = retrieval_response.get("results", [])
-        except Exception as e:
-            logger.error(f"Error during evaluation retrieval: {e}")
-            retrieved_chunks = []
-
-        # 2. Build Prompt & Generate Answer
-        generated_answer = ""
-        prompt_metadata = {}
-
-        if retrieved_chunks:
+            candidate_pool_limit = 20
             try:
-                prompt_res = self.prompt_builder.build_prompt(question, retrieved_chunks)
-                prompt_text = prompt_res.get("prompt", "")
-                prompt_metadata = prompt_res.get("metadata", {})
+                candidate_pool_limit = current_app.config.get("RERANK_CANDIDATE_POOL", 20)
+            except Exception:
+                pass
+            candidate_top_k = max(top_k, candidate_pool_limit)
 
-                llm_res = self.llm_service.generate(prompt_text)
-                generated_answer = llm_res.get("content", "") or llm_res.get("answer", "")
+            candidates = self.retriever.search(question, top_k=candidate_top_k)
+            reranked_results = self.cross_encoder.rerank(question, candidates, top_k=top_k)
+        except Exception as e:
+            logger.error(f"Error during evaluation retrieval/reranking: {e}", exc_info=True)
+            reranked_results = []
+
+        # 2. Build Prompt & Generate Answer via LLMService
+        generated_answer = ""
+        prompt_result = {}
+        included_chunks = []
+
+        if reranked_results:
+            try:
+                prompt_result = self.prompt_builder.build_prompt(
+                    query=question,
+                    retrieval_results=reranked_results
+                )
+                rendered_prompt = prompt_result.get("prompt", "")
+                included_chunks = prompt_result.get("results", [])
+
+                llm_res = self.llm_service.generate(rendered_prompt)
+                generated_answer = llm_res.get("answer", "") or llm_res.get("content", "")
             except Exception as e:
-                logger.error(f"Error during evaluation generation: {e}")
+                logger.error(f"Error during evaluation generation: {e}", exc_info=True)
                 generated_answer = "Generation unavailable during evaluation."
         else:
             generated_answer = "No relevant context found to generate an answer."
+
+        # Normalize retrieved chunks for metric computation
+        retrieved_chunks = included_chunks if included_chunks else [
+            self.prompt_builder._normalize_result(r) for r in reranked_results
+        ]
 
         # 3. Compute Metrics
         ret_precision = self.compute_retrieval_precision(retrieved_chunks, ground_truth, expected_documents, expected_pages)

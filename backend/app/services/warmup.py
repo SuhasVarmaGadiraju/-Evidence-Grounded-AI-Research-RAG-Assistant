@@ -25,8 +25,9 @@ def warmup_services(app=None) -> Dict[str, Any]:
 
     # 1. Warm-up Embedding Model
     try:
-        from app.services.embedding import get_embedding_model
-        get_embedding_model()
+        from app.services.embedding import EmbeddingService
+        emb_svc = EmbeddingService()
+        emb_svc.get_model()
         status["embedding_loaded"] = True
         logger.info("Warmup: SentenceTransformer embedding model ready.")
     except Exception as e:
