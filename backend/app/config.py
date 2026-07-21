@@ -51,6 +51,10 @@ class Config:
     # Conversation Management Configuration
     MAX_CONVERSATION_TURNS = int(os.getenv("MAX_CONVERSATION_TURNS", 10))
 
+    # Evaluation Configuration
+    EVALUATION_ENABLED = os.getenv("EVALUATION_ENABLED", "True").lower() in ("true", "1", "yes")
+    SAVE_EVALUATION_HISTORY = os.getenv("SAVE_EVALUATION_HISTORY", "True").lower() in ("true", "1", "yes")
+    EVALUATION_DATASET_PATH = os.getenv("EVALUATION_DATASET_PATH", os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", "evaluation")))
 
     # Prompt Builder Configuration
     MAX_CONTEXT_CHUNKS = int(os.getenv("MAX_CONTEXT_CHUNKS", 5))

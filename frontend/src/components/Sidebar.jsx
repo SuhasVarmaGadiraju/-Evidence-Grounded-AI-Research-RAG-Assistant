@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, MessageSquare, UploadCloud, FolderClosed, Settings, Terminal, Search, Sliders, Shuffle, ChevronsUp, FileCode } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, UploadCloud, FolderClosed, Settings, Terminal, Search, Sliders, Shuffle, ChevronsUp, FileCode, Award } from 'lucide-react';
 
 export default function Sidebar() {
   const links = [
@@ -14,6 +14,7 @@ export default function Sidebar() {
     { name: 'Hybrid Search', path: '/hybrid-search', icon: Shuffle },
     { name: 'Rerank Search', path: '/rerank-search', icon: ChevronsUp },
     { name: 'Prompt Builder', path: '/prompt-builder', icon: FileCode },
+    { name: 'Evaluation', path: '/evaluation', icon: Award },
     { name: 'Settings', path: '/settings', icon: Settings },
   ];
 

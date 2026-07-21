@@ -12,6 +12,7 @@ import BM25Search from './pages/BM25Search';
 import HybridSearch from './pages/HybridSearch';
 import RerankSearch from './pages/RerankSearch';
 import PromptBuilder from './pages/PromptBuilder';
+import Evaluation from './pages/Evaluation';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="hybrid-search" element={<HybridSearch />} />
           <Route path="rerank-search" element={<RerankSearch />} />
           <Route path="prompt-builder" element={<PromptBuilder />} />
+          <Route path="evaluation" element={<Evaluation />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
