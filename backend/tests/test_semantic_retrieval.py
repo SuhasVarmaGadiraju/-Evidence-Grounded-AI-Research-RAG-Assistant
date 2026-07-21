@@ -11,6 +11,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")
 from app import create_app
 from app.services.embedding import EmbeddingService
 from app.services.vector_index import FAISSIndexService
+from app.services.base_retriever import RetrievalResult
 from app.services.semantic_retrieval import SemanticRetrievalService, SemanticRetrievalError
 
 class TestSemanticRetrievalService(unittest.TestCase):
@@ -121,21 +122,18 @@ class TestSemanticRetrievalService(unittest.TestCase):
 
     def test_api_retrieval_search_endpoint_success(self):
         """Verify POST /api/retrieval/search endpoint response structure and latency metrics."""
-        mock_matches = [
-            {"chunk_id": "c1", "document_id": "d1", "text": "matched text", "page_number": 2, "score": 0.88}
-        ]
+        mock_result = RetrievalResult(
+            rank=1,
+            score=0.88,
+            retrieval_type="semantic",
+            document_id="d1",
+            document_name="filename.pdf",
+            page_number=2,
+            chunk_id="c1",
+            text="matched text"
+        )
         
-        with patch.object(SemanticRetrievalService, 'retrieve', return_value=[
-            {
-                "rank": 1,
-                "similarity_score": 0.88,
-                "document_id": "d1",
-                "document_name": "filename.pdf",
-                "page_number": 2,
-                "chunk_id": "c1",
-                "text": "matched text"
-            }
-        ]):
+        with patch.object(SemanticRetrievalService, 'search', return_value=[mock_result]):
             response = self.client.post(
                 "/api/retrieval/search",
                 json={"query": "RAG search", "top_k": 3}
