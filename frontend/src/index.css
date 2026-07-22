@@ -12,24 +12,86 @@
   --color-brand-800: #074c86;
   --color-brand-900: #0c3f6e;
   --color-brand-950: #082849;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* CSS Theme Custom Variables for Dynamic Light / Dark Mode System */
+:root {
+  --bg-app: #f8fafc;
+  --bg-surface: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-muted: #f1f5f9;
+  --bg-input: #ffffff;
+  --border-color: #e2e8f0;
+  --border-color-hover: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.07), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+
+html.dark, body.dark {
+  --bg-app: #030712;
+  --bg-surface: #090d16;
+  --bg-card: #0f172a;
+  --bg-card-hover: #1e293b;
+  --bg-muted: #1e293b;
+  --bg-input: #030712;
+  --border-color: #1e293b;
+  --border-color-hover: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.4);
 }
 
 body {
-  background-color: #f8fafc;
-  color: #0f172a;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  transition-property: color, background-color;
-  transition-duration: 200ms;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  transition: background-color 0.2s ease, color 0.2s ease;
   -webkit-font-smoothing: antialiased;
 }
 
-body.dark {
-  background-color: #020617;
-  color: #f8fafc;
+/* Helper Theme Utility Classes */
+.bg-app { background-color: var(--bg-app); }
+.bg-surface { background-color: var(--bg-surface); }
+.bg-card { background-color: var(--bg-card); }
+.bg-card-hover { background-color: var(--bg-card-hover); }
+.bg-muted { background-color: var(--bg-muted); }
+.bg-input { background-color: var(--bg-input); }
+
+.border-theme { border-color: var(--border-color); }
+.border-theme-hover:hover { border-color: var(--border-color-hover); }
+
+.text-main { color: var(--text-primary); }
+.text-sub { color: var(--text-secondary); }
+.text-muted-custom { color: var(--text-muted); }
+
+/* Glassmorphism Panel */
+.glass-panel {
+  background: var(--bg-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
 }
 
-/* Custom Scrollbar Styles */
+/* Soft Hover Card Lift */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-color-hover);
+}
+
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -40,10 +102,20 @@ body.dark {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--border-color);
   border-radius: 9999px;
 }
 
-.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Smooth Fade In Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

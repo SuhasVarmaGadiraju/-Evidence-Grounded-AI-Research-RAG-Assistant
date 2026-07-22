@@ -1,20 +1,10 @@
 import React, { useState } from 'react';
 import {
-  FileCode,
-  Clock,
-  Layers,
   Loader2,
   AlertCircle,
   Copy,
   Check,
-  AlignLeft,
-  Binary,
-  Cpu,
-  FileText,
-  Sparkles,
-  ShieldCheck,
-  Hash,
-  Tag
+  Sparkles
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -51,14 +41,14 @@ export default function PromptBuilder() {
         setError(response.message || 'Failed to build prompt.');
       }
     } catch (err) {
-      console.error('Error during prompt building:', err);
-      setError(err.message || 'Failed to execute prompt builder request.');
+      console.error('Error building prompt:', err);
+      setError(err.message || 'Failed to communicate with Prompt Builder endpoint.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCopyPrompt = () => {
+  const handleCopy = () => {
     if (!result?.prompt) return;
     navigator.clipboard.writeText(result.prompt);
     setCopied(true);
@@ -66,65 +56,51 @@ export default function PromptBuilder() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 pb-12">
-      {/* Title */}
+    <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-          <FileCode className="w-6 h-6 text-brand-500" />
-          Prompt Builder
-        </h1>
-        <p className="text-slate-500 dark:text-slate-400 text-xs mt-1">
-          Production-ready Prompt Builder module. Converts Hybrid Retrieval & Cross-Encoder reranked evidence into structured prompts for downstream LLM inference.
+        <h1 className="text-2xl font-bold tracking-tight text-main">Prompt Builder</h1>
+        <p className="text-xs text-sub mt-1">
+          Simulate context injection, prompt minification, token budget estimation, and SHA-256 template hashing.
         </p>
       </div>
 
-      {/* Control Form Card */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 shadow-sm">
+      <div className="p-6 rounded-2xl border border-theme bg-card">
         <form onSubmit={handleBuildPrompt} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-            <div className="md:col-span-2 space-y-1.5">
-              <label htmlFor="query" className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                User Query
-              </label>
-              <input
-                id="query"
-                type="text"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Enter a research question to build prompt context..."
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:border-brand-500 focus:outline-none transition-colors"
-                disabled={loading}
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-custom font-mono mb-2">
+              User Query String
+            </label>
+            <textarea
+              rows={3}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Enter user research query string..."
+              className="w-full p-3 rounded-xl border border-theme bg-input text-main placeholder-slate-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+            />
+          </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="topK" className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                Max Chunks (Top-K)
-              </label>
-              <input
-                id="topK"
-                type="number"
-                min="1"
-                max="20"
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-sub mb-1">Max Evidence Chunks (Top-K):</label>
+              <select
                 value={topK}
                 onChange={(e) => setTopK(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 focus:border-brand-500 focus:outline-none transition-colors"
-                disabled={loading}
-              />
+                className="w-full px-3 py-2 rounded-xl border border-theme bg-input text-main text-xs font-medium focus:outline-none"
+              >
+                <option value={3}>3 Chunks</option>
+                <option value={5}>5 Chunks</option>
+                <option value={10}>10 Chunks</option>
+              </select>
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="templateVersion" className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">
-                Template Version
-              </label>
+            <div>
+              <label className="block text-xs font-semibold text-sub mb-1">Prompt Template Version:</label>
               <select
-                id="templateVersion"
                 value={templateVersion}
                 onChange={(e) => setTemplateVersion(e.target.value)}
-                className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950 px-3 py-2 text-sm text-slate-800 dark:text-slate-200 focus:border-brand-500 focus:outline-none transition-colors cursor-pointer"
-                disabled={loading}
+                className="w-full px-3 py-2 rounded-xl border border-theme bg-input text-main text-xs font-medium focus:outline-none"
               >
-                <option value="rag_prompt_v1">rag_prompt_v1 (Default)</option>
+                <option value="rag_prompt_v1">RAG Prompt v1.0 (Grounded Citations)</option>
               </select>
             </div>
           </div>
@@ -132,201 +108,69 @@ export default function PromptBuilder() {
           <div className="flex justify-end pt-2">
             <button
               type="submit"
-              disabled={loading}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-brand-600 hover:bg-brand-700 disabled:bg-brand-400 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors cursor-pointer disabled:cursor-not-allowed h-[40px]"
+              disabled={loading || !query.trim()}
+              className="px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs shadow-sm transition-all disabled:opacity-50 flex items-center gap-2"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Building Prompt...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-4 h-4" />
-                  Build Prompt
-                </>
-              )}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+              Build & Minify Prompt
             </button>
           </div>
         </form>
       </div>
 
-      {/* Error display */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 text-red-800 dark:bg-red-950/20 dark:border-red-900/50 dark:text-red-300 rounded-xl flex items-center gap-2 text-xs">
+        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{error}</span>
+          {error}
         </div>
       )}
 
-      {/* Output Dashboard */}
       {result && (
         <div className="space-y-6">
-          {/* Metadata Sub-Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 p-3 rounded-xl text-xs text-slate-600 dark:text-slate-400">
-            <div className="flex flex-wrap items-center gap-4">
-              <span className="flex items-center gap-1 font-mono">
-                <Hash className="w-3.5 h-3.5 text-brand-500" />
-                Prompt Hash: <strong className="text-slate-800 dark:text-slate-200" title={result.prompt_hash}>{result.prompt_hash ? `${result.prompt_hash.substring(0, 16)}...` : 'N/A'}</strong>
-              </span>
-              <span className="flex items-center gap-1">
-                <Tag className="w-3.5 h-3.5 text-indigo-500" />
-                Prompt Ver: <strong className="text-slate-800 dark:text-slate-200">{result.prompt_version || '1.0.0'}</strong>
-              </span>
-              <span className="flex items-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                Pipeline Ver: <strong className="text-slate-800 dark:text-slate-200">{result.pipeline_version || '1.0.0'}</strong>
-              </span>
+          {/* Metadata Cards */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+            <div className="p-4 rounded-2xl border border-theme bg-card">
+              <div className="text-sub">Total Characters</div>
+              <div className="text-lg font-bold text-main">{result.metadata?.char_count || result.prompt?.length || 0}</div>
             </div>
 
-            {result.validation?.warnings && result.validation.warnings.length > 0 && (
-              <span className="bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 px-2 py-1 rounded border border-amber-200 dark:border-amber-900/50 text-[11px]">
-                ⚠️ {result.validation.warnings[0]}
-              </span>
-            )}
-          </div>
-
-          {/* Metrics Summary Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl space-y-1">
-              <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
-                <AlignLeft className="w-3.5 h-3.5 text-brand-500" />
-                Lines
-              </div>
-              <p className="text-lg font-bold text-slate-800 dark:text-slate-100 font-mono">
-                {result.prompt_length}
-              </p>
+            <div className="p-4 rounded-2xl border border-theme bg-card">
+              <div className="text-sub">Est. Token Budget</div>
+              <div className="text-lg font-bold font-mono text-brand-500">~{result.metadata?.estimated_tokens || 0} tks</div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl space-y-1">
-              <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
-                <Binary className="w-3.5 h-3.5 text-indigo-500" />
-                Characters
-              </div>
-              <p className="text-lg font-bold text-slate-800 dark:text-slate-100 font-mono">
-                {result.character_count.toLocaleString()}
-              </p>
+            <div className="p-4 rounded-2xl border border-theme bg-card">
+              <div className="text-sub">Included Chunks</div>
+              <div className="text-lg font-bold text-emerald-500">{result.metadata?.chunk_count || 0}</div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl space-y-1">
-              <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
-                <Layers className="w-3.5 h-3.5 text-purple-500" />
-                Chunks
+            <div className="p-4 rounded-2xl border border-theme bg-card">
+              <div className="text-sub">Build Latency</div>
+              <div className="text-lg font-bold font-mono text-amber-500">
+                {((result.metadata?.build_time_seconds || 0) * 1000).toFixed(1)} ms
               </div>
-              <p className="text-lg font-bold text-slate-800 dark:text-slate-100 font-mono">
-                {result.context_chunk_count}
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl space-y-1">
-              <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
-                <Cpu className="w-3.5 h-3.5 text-amber-500" />
-                Est. Tokens
-              </div>
-              <p className="text-lg font-bold text-slate-800 dark:text-slate-100 font-mono">
-                ~{result.estimated_tokens.toLocaleString()}
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl space-y-1">
-              <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
-                <FileCode className="w-3.5 h-3.5 text-emerald-500" />
-                Template
-              </div>
-              <p className="text-sm font-bold text-slate-800 dark:text-slate-100 truncate" title={result.template_version}>
-                {result.template_version}
-              </p>
-            </div>
-
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3.5 rounded-xl space-y-1">
-              <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-[11px] font-semibold uppercase tracking-wider">
-                <Clock className="w-3.5 h-3.5 text-rose-500" />
-                Latency
-              </div>
-              <p className="text-lg font-bold text-slate-800 dark:text-slate-100 font-mono">
-                {result.pipeline_time_seconds.toFixed(4)}s
-              </p>
             </div>
           </div>
 
-          {/* Generated Prompt Code Container */}
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-3.5 bg-slate-50/80 dark:bg-slate-950/60 border-b border-slate-200 dark:border-slate-800">
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-brand-500" />
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
-                  Generated Prompt Output
-                </span>
-                {result.truncated && (
-                  <span className="bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 text-[10px] font-semibold px-2 py-0.5 rounded">
-                    Truncated
-                  </span>
-                )}
-              </div>
-
+          {/* Rendered Output */}
+          <div className="p-6 rounded-2xl border border-theme bg-card">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-xs font-bold font-mono uppercase tracking-wider text-muted-custom">
+                Final Rendered Prompt Output
+              </span>
               <button
-                onClick={handleCopyPrompt}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors cursor-pointer"
+                onClick={handleCopy}
+                className="px-3 py-1.5 rounded-lg border border-theme bg-muted hover:bg-card text-xs font-semibold text-main flex items-center gap-1.5 transition-colors"
               >
-                {copied ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-emerald-600 dark:text-emerald-400">Copied</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Copy Prompt</span>
-                  </>
-                )}
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? 'Copied' : 'Copy Prompt'}
               </button>
             </div>
 
-            <div className="p-6 overflow-x-auto bg-slate-950 text-slate-100 font-mono text-xs leading-relaxed max-h-[500px] overflow-y-auto">
-              <pre className="whitespace-pre-wrap">{result.prompt}</pre>
-            </div>
+            <pre className="p-4 rounded-xl font-mono text-xs overflow-x-auto whitespace-pre-wrap leading-relaxed border border-theme bg-input text-main">
+              {result.prompt}
+            </pre>
           </div>
-
-          {/* Included Evidence Chunks Details */}
-          {result.results && result.results.length > 0 && (
-            <div className="space-y-3">
-              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
-                <Layers className="w-4 h-4 text-brand-500" />
-                Evidence Chunks Included in Prompt ({result.results.length})
-              </h3>
-
-              <div className="grid grid-cols-1 gap-3">
-                {result.results.map((chunk, idx) => (
-                  <div
-                    key={chunk.chunk_id || idx}
-                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 rounded-xl space-y-2 shadow-sm text-xs"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/60 pb-2">
-                      <div className="flex items-center gap-2 font-semibold text-slate-700 dark:text-slate-300">
-                        <span className="bg-brand-50 dark:bg-brand-950/40 text-brand-600 dark:text-brand-400 px-2 py-0.5 rounded font-mono text-[11px]">
-                          Chunk #{idx + 1}
-                        </span>
-                        <span className="truncate max-w-[250px]" title={chunk.document_name}>
-                          {chunk.document_name}
-                        </span>
-                        <span className="text-slate-400 dark:text-slate-500 font-normal">
-                          (Page {chunk.page_number})
-                        </span>
-                      </div>
-
-                      <div className="font-mono text-[10px] text-slate-400">
-                        ID: {chunk.chunk_id}
-                      </div>
-                    </div>
-
-                    <p className="text-slate-600 dark:text-slate-300 italic bg-slate-50/50 dark:bg-slate-950/40 p-2.5 rounded border border-slate-100 dark:border-slate-900 whitespace-pre-wrap">
-                      "{chunk.text}"
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>

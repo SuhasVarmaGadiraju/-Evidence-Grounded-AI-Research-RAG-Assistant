@@ -14,7 +14,7 @@ api.interceptors.response.use(
   (error) => {
     const errorData = error.response?.data || {
       message: 'A network error occurred. Please try again.',
-      success: False
+      success: false
     };
     
     // Log error to console in dev mode

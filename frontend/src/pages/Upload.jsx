@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2, Settings } from 'lucide-react';
+import { Upload, FileText, CheckCircle, AlertCircle, Loader2, Settings, X, Database } from 'lucide-react';
 import api from '../services/api';
 
 export default function UploadPage() {
@@ -8,8 +8,8 @@ export default function UploadPage() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [statusText, setStatusText] = useState('Ingesting documents...');
-  const [strategy, setStrategy] = useState('fixed'); // 'fixed' | 'recursive'
-  const [notification, setNotification] = useState(null); // { type: 'success' | 'error', message: string }
+  const [strategy, setStrategy] = useState('fixed');
+  const [notification, setNotification] = useState(null);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -38,7 +38,6 @@ export default function UploadPage() {
   };
 
   const addFiles = (newFiles) => {
-    // Only accept PDF files
     const pdfs = newFiles.filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'));
     const nonPdfs = newFiles.filter(f => !f.type === 'application/pdf' && !f.name.toLowerCase().endsWith('.pdf'));
     
@@ -52,13 +51,12 @@ export default function UploadPage() {
 
     if (pdfs.length === 0) return;
 
-    // Convert file objects into our state representation
     const mapped = pdfs.map(file => ({
       rawFile: file,
       name: file.name,
       size: (file.size / (1024 * 1024)).toFixed(2) + ' MB',
-      status: 'pending', // 'pending' | 'success' | 'failed'
-      info: null // stores metadata or error details after upload
+      status: 'pending',
+      info: null
     }));
 
     setFiles(prev => [...prev, ...mapped]);
@@ -82,14 +80,11 @@ export default function UploadPage() {
     pendingFiles.forEach(file => {
       formData.append('files', file.rawFile);
     });
-    
-    // Add chunking strategy to multipart form body
     formData.append('strategy', strategy);
 
     let cleaningTimer = null;
 
     try {
-      // Set up timer to transition text to "Cleaning..." after upload finishes
       cleaningTimer = setTimeout(() => {
         setStatusText('Cleaning and normalizing text...');
       }, 1500);
@@ -108,7 +103,6 @@ export default function UploadPage() {
         }
       });
 
-      // Parse output results mapping back to our files state
       const backendResults = response.results || [];
       
       setFiles(prev => prev.map(file => {
@@ -159,28 +153,28 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Title */}
+    <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+      {/* Title Header */}
       <div>
-        <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
-          Upload Research Documents
+        <h1 className="text-2xl font-bold tracking-tight text-main">
+          Upload Documents
         </h1>
-        <p className="text-slate-500 dark:text-slate-400 text-xs">
-          Upload PDF documents. The system will validate structural signatures and parse layout page text page-by-page.
+        <p className="text-xs text-sub mt-1">
+          Upload PDF research papers. Text is extracted, tokenized, and indexed into FAISS vector store and BM25 lexical engine.
         </p>
       </div>
 
-      {/* Notification banner */}
+      {/* Notification Banner */}
       {notification && (
-        <div className={`p-4 rounded-lg flex items-start gap-3 border text-sm ${
+        <div className={`p-4 rounded-2xl flex items-start gap-3 border text-sm ${
           notification.type === 'success'
-            ? 'bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-900/50 dark:text-emerald-300'
-            : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950/20 dark:border-red-900/50 dark:text-red-300'
+            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-500'
+            : 'bg-red-500/10 border-red-500/20 text-red-500'
         }`}>
           {notification.type === 'success' ? (
-            <CheckCircle className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
+            <CheckCircle className="w-5 h-5 shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
           )}
           <div>
             <p className="font-semibold">{notification.type === 'success' ? 'Upload Completed' : 'Ingestion Error'}</p>
@@ -189,173 +183,155 @@ export default function UploadPage() {
         </div>
       )}
 
-      {/* Chunking strategy configuration panel */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm">
+      {/* Strategy Selector */}
+      <div className="p-5 rounded-2xl border border-theme bg-card flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className="p-2 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-500 dark:text-indigo-400 rounded-lg shrink-0">
+          <div className="p-2.5 bg-brand-500/10 text-brand-500 rounded-xl border border-brand-500/20 shrink-0">
             <Settings className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
-              Chunking Configuration
-            </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Select the partition method for indexing document text pages.
+            <h3 className="text-sm font-bold text-main">Chunking & Tokenizer Settings</h3>
+            <p className="text-xs text-sub mt-0.5">
+              Select paragraph boundary segmentation algorithm.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <label className="text-xs font-semibold text-slate-600 dark:text-slate-400">Strategy:</label>
-          <select
-            value={strategy}
-            onChange={(e) => setStrategy(e.target.value)}
-            disabled={uploading}
-            className="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
+
+        <div className="flex items-center gap-2 bg-muted p-1.5 rounded-xl border border-theme">
+          <button
+            type="button"
+            onClick={() => setStrategy('fixed')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              strategy === 'fixed'
+                ? 'bg-brand-600 text-white shadow-sm'
+                : 'text-sub hover:text-main'
+            }`}
           >
-            <option value="fixed">Fixed Character (sliding-window offsets)</option>
-            <option value="recursive">Recursive (split by paragraphs/sentences/words)</option>
-            <option value="semantic">Semantic (split by sentence similarity embeddings)</option>
-          </select>
+            Fixed-Size (500 Chars)
+          </button>
+          <button
+            type="button"
+            onClick={() => setStrategy('recursive')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+              strategy === 'recursive'
+                ? 'bg-brand-600 text-white shadow-sm'
+                : 'text-sub hover:text-main'
+            }`}
+          >
+            Recursive Structure
+          </button>
         </div>
       </div>
 
-      {/* Upload Drag Box */}
+      {/* Drag & Drop Dropzone */}
       <div
         onDragEnter={handleDrag}
-        onDragOver={handleDrag}
         onDragLeave={handleDrag}
+        onDragOver={handleDrag}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-xl p-8 text-center flex flex-col items-center justify-center transition-all ${
-          dragActive
-            ? 'border-brand-500 bg-brand-50/50 dark:bg-brand-950/20'
-            : 'border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-900 hover:border-slate-400 dark:hover:border-slate-700'
-        } ${uploading ? 'pointer-events-none opacity-60' : ''}`}
+        className={`relative border-2 border-dashed border-theme rounded-3xl p-8 sm:p-12 text-center transition-all bg-card ${
+          dragActive ? 'border-brand-500 bg-brand-500/10' : 'hover:border-brand-500/50'
+        }`}
       >
-        <Upload className="w-12 h-12 text-slate-400 mb-4" />
-        <p className="text-sm text-slate-600 dark:text-slate-300 font-medium">
-          Drag and drop PDF files here
+        <input
+          type="file"
+          multiple
+          accept=".pdf,application/pdf"
+          onChange={handleFileInput}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          disabled={uploading}
+        />
+        <div className="w-14 h-14 rounded-2xl bg-brand-500/10 border border-brand-500/20 text-brand-500 flex items-center justify-center mx-auto mb-4">
+          <Upload className="w-7 h-7" />
+        </div>
+        <h3 className="text-base font-bold text-main mb-1">Drag and drop research PDF files here</h3>
+        <p className="text-xs text-sub">
+          Supports multi-page academic papers, textbooks, and documentation (PDF format).
         </p>
-        <p className="text-xs text-slate-400 mt-1">
-          Supported formats: PDF (Max size: 10MB)
-        </p>
-        
-        <label className="mt-4 px-4 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-xs font-semibold cursor-pointer transition-colors">
-          Browse Files
-          <input
-            type="file"
-            multiple
-            accept=".pdf"
-            onChange={handleFileInput}
-            className="hidden"
-            disabled={uploading}
-          />
-        </label>
       </div>
 
-      {/* Upload Progress Bar */}
-      {uploading && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-2">
-          <div className="flex justify-between text-xs font-medium">
-            <span className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-500" />
-              {statusText}
-            </span>
-            <span className="text-slate-800 dark:text-slate-200">{uploadProgress}%</span>
-          </div>
-          <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
-            <div
-              className="bg-brand-600 h-full transition-all duration-300 ease-out"
-              style={{ width: `${uploadProgress}%` }}
-            ></div>
-          </div>
-        </div>
-      )}
-
-      {/* Files List */}
+      {/* Selected Files List & Queue */}
       {files.length > 0 && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-4">
-          <div className="flex justify-between items-center">
-            <h3 className="font-bold text-sm text-slate-800 dark:text-slate-200">
-              Queue / History ({files.length})
+        <div className="p-6 rounded-2xl border border-theme bg-card space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-muted-custom font-mono">
+              Ingestion Queue ({files.length})
             </h3>
-            <button
-              onClick={clearCompleted}
-              disabled={uploading || !files.some(f => f.status !== 'pending')}
-              className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors disabled:opacity-50 cursor-pointer"
-            >
-              Clear Finished
-            </button>
+            {files.some(f => f.status === 'success') && (
+              <button
+                onClick={clearCompleted}
+                className="text-xs font-semibold text-brand-500 hover:underline"
+              >
+                Clear Ingested
+              </button>
+            )}
           </div>
 
-          <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {files.map((file, idx) => (
-              <div key={idx} className="py-3 flex flex-col gap-2">
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-brand-500 shrink-0" />
-                    <span className="font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[250px] md:max-w-md">
-                      {file.name}
-                    </span>
-                    <span className="text-slate-400">({file.size})</span>
+          <div className="space-y-2.5">
+            {files.map((file, index) => (
+              <div
+                key={index}
+                className="p-3.5 rounded-xl border border-theme bg-muted flex items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-3 overflow-hidden">
+                  <div className="p-2 rounded-lg bg-brand-500/10 text-brand-500 shrink-0">
+                    <FileText className="w-5 h-5" />
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    {file.status === 'pending' && (
-                      <span className="text-slate-500 font-semibold">Pending</span>
-                    )}
-                    {file.status === 'success' && (
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" />
-                        Ingested
-                      </span>
-                    )}
-                    {file.status === 'failed' && (
-                      <span className="text-red-600 dark:text-red-400 font-semibold flex items-center gap-1">
-                        <AlertCircle className="w-3.5 h-3.5" />
-                        Failed
-                      </span>
-                    )}
-
-                    <button
-                      onClick={() => removeFile(idx)}
-                      disabled={uploading}
-                      className="text-slate-400 hover:text-red-500 transition-colors disabled:opacity-30 cursor-pointer"
-                      title="Remove file"
-                    >
-                      &times;
-                    </button>
+                  <div className="truncate">
+                    <div className="text-xs font-bold text-main truncate">{file.name}</div>
+                    <div className="text-[10px] text-sub">{file.size}</div>
                   </div>
                 </div>
 
-                {/* Display page stats or errors */}
-                {file.status === 'success' && file.info && (
-                  <div className="pl-6 text-[11px] text-slate-500 flex gap-4">
-                    <span><strong>Pages:</strong> {file.info.total_pages}</span>
-                    <span><strong>Chunks:</strong> {file.info.total_chunks} ({file.info.chunking_strategy === 'recursive' ? 'Recursive' : 'Fixed'})</span>
-                    <span><strong>File ID:</strong> <code className="bg-slate-50 dark:bg-slate-800 px-1 rounded">{file.info.document_id}</code></span>
-                  </div>
-                )}
+                <div className="flex items-center gap-3">
+                  {file.status === 'pending' && (
+                    <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-slate-500/10 text-sub border border-theme">
+                      Pending
+                    </span>
+                  )}
+                  {file.status === 'success' && (
+                    <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                      Indexed ({file.info?.total_chunks || 0} chunks)
+                    </span>
+                  )}
+                  {file.status === 'failed' && (
+                    <span className="text-[10px] px-2 py-0.5 rounded font-mono bg-red-500/10 text-red-500 border border-red-500/20">
+                      Failed
+                    </span>
+                  )}
 
-                {file.status === 'failed' && file.info && (
-                  <div className="pl-6 text-[11px] text-red-500 font-medium">
-                    {file.info.error}
-                  </div>
-                )}
+                  {!uploading && (
+                    <button
+                      onClick={() => removeFile(index)}
+                      className="p-1 rounded text-muted-custom hover:text-red-500 transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               </div>
             ))}
           </div>
 
-          {files.some(f => f.status === 'pending') && (
-            <div className="flex justify-end pt-2">
-              <button
-                onClick={triggerUpload}
-                disabled={uploading}
-                className="bg-brand-600 hover:bg-brand-700 text-white font-semibold px-4 py-2 rounded-lg text-xs cursor-pointer transition-colors shadow-sm disabled:opacity-50"
-              >
-                {uploading ? 'Processing...' : 'Process & Ingest'}
-              </button>
-            </div>
-          )}
+          <div className="flex justify-end pt-2">
+            <button
+              onClick={triggerUpload}
+              disabled={uploading || files.every(f => f.status === 'success')}
+              className="px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs shadow-md transition-all disabled:opacity-50 flex items-center gap-2"
+            >
+              {uploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {statusText} ({uploadProgress}%)
+                </>
+              ) : (
+                <>
+                  <Database className="w-4 h-4" />
+                  Start Ingestion & Indexing
+                </>
+              )}
+            </button>
+          </div>
         </div>
       )}
     </div>
