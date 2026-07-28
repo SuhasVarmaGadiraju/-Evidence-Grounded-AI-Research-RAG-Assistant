@@ -58,6 +58,16 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Chrome/Safari input autofill background override */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: currentColor !important;
+  -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
 /* Helper Theme Utility Classes */
 .bg-app { background-color: var(--bg-app); }
 .bg-surface { background-color: var(--bg-surface); }

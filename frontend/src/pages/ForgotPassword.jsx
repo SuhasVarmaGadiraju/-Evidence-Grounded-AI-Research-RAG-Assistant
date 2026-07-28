@@ -6,14 +6,21 @@ import { useAuth } from '../context/AuthContext';
 
 export default function ForgotPassword() {
   const { isDark } = useTheme();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (email.trim()) {
+    setError('');
+    if (!email.trim()) return;
+
+    try {
+      await resetPassword(email.trim());
       setSubmitted(true);
+    } catch (err) {
+      setError(err.message || 'Failed to send password reset email.');
     }
   };
 

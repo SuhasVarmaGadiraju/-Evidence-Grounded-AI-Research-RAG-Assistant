@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   BrainCircuit,
@@ -30,6 +30,12 @@ export default function LandingPage() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState(null);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const features = [
     {
