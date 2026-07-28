@@ -9,7 +9,7 @@ export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
 
   return (
-    <div className="min-h-screen flex bg-app text-main transition-colors duration-200">
+    <div className="h-screen w-screen flex overflow-hidden bg-app text-main transition-colors duration-200">
       {/* Sidebar Navigation Drawer */}
       <Sidebar
         mobileOpen={mobileOpen}
@@ -18,15 +18,15 @@ export default function AppLayout() {
         setCollapsed={setCollapsed}
       />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Persistent Top Navbar */}
+      {/* Main Content Container Area */}
+      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
+        {/* Fixed Top Header Navbar */}
         <Header toggleMobileSidebar={() => setMobileOpen(true)} />
 
         {/* Breadcrumb Bar */}
         <Breadcrumbs />
 
-        {/* Dynamic Route Viewport */}
+        {/* Independent Scrollable Content Viewport */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
           <div className="max-w-7xl mx-auto">
             <Outlet />

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Layers, Loader2, AlertCircle } from 'lucide-react';
 import api from '../services/api';
+import CustomSelect from '../components/ui/CustomSelect';
 
 export default function BM25Search() {
   const [query, setQuery] = useState('');
@@ -44,16 +45,16 @@ export default function BM25Search() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight text-main">BM25 Search</h1>
+        <h1 className="text-xl font-bold tracking-tight text-main">BM25 Search</h1>
         <p className="text-xs text-sub mt-1">
           Search exact term frequencies, acronyms, and sparse token matches across ingested literature using Okapi BM25.
         </p>
       </div>
 
-      <div className="p-6 rounded-2xl border border-theme bg-card">
+      <div className="p-5 rounded-xl border border-theme bg-card">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-muted-custom font-mono mb-2">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-custom font-mono mb-1.5">
               Lexical Keyword Query
             </label>
             <div className="relative">
@@ -63,28 +64,29 @@ export default function BM25Search() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Enter exact keywords, paper titles, or acronyms..."
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-theme bg-input text-main placeholder-slate-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-theme bg-input text-main placeholder-slate-400 text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
               />
             </div>
           </div>
 
           <div className="flex justify-between items-center">
-            <select
+            <CustomSelect
               value={topK}
               onChange={(e) => setTopK(e.target.value)}
-              className="px-3 py-1.5 rounded-lg border border-theme bg-input text-main text-xs font-medium focus:outline-none"
-            >
-              <option value={3}>3 Matches</option>
-              <option value={5}>5 Matches</option>
-              <option value={10}>10 Matches</option>
-            </select>
+              options={[
+                { value: 3, label: '3 Matches' },
+                { value: 5, label: '5 Matches' },
+                { value: 10, label: '10 Matches' },
+              ]}
+              size="sm"
+            />
 
             <button
               type="submit"
               disabled={loading || !query.trim()}
-              className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-sm transition-all flex items-center gap-2"
+              className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium text-xs shadow-xs transition-all flex items-center gap-2"
             >
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Layers className="w-4 h-4" />}
+              {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Layers className="w-3.5 h-3.5" />}
               Query BM25 Store
             </button>
           </div>
@@ -92,7 +94,7 @@ export default function BM25Search() {
       </div>
 
       {error && (
-        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-500 text-xs flex items-center gap-2">
+        <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-xs flex items-center gap-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           {error}
         </div>
@@ -109,17 +111,17 @@ export default function BM25Search() {
             const scoreVal = chunk.score || 0;
             const barWidth = Math.min(100, Math.max(5, scoreVal * 5));
             return (
-              <div key={idx} className="p-4 rounded-2xl border border-theme bg-card space-y-2">
+              <div key={idx} className="p-4 rounded-xl border border-theme bg-card space-y-2">
                 <div className="flex justify-between items-center border-b border-theme pb-2">
-                  <span className="font-bold text-xs text-main">{chunk.document_name} (Page {chunk.page_number})</span>
-                  <span className="text-[10px] font-mono text-amber-500 bg-muted px-2 py-0.5 rounded border border-theme">
+                  <span className="font-semibold text-xs text-main">{chunk.document_name} <span className="text-muted-custom font-normal font-mono">(Page {chunk.page_number})</span></span>
+                  <span className="text-[10px] font-mono text-main bg-muted px-2 py-0.5 rounded border border-theme">
                     BM25 Score: {scoreVal.toFixed(4)}
                   </span>
                 </div>
                 <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                   <div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{ width: `${barWidth}%` }}></div>
                 </div>
-                <p className="text-xs text-sub italic">"{chunk.text}"</p>
+                <p className="text-xs text-sub italic leading-relaxed font-mono">"{chunk.text}"</p>
               </div>
             );
           })}
