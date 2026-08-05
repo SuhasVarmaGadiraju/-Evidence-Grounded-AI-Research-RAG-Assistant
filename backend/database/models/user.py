@@ -21,6 +21,7 @@ class User(db.Model):
 
     # Relationships
     documents = db.relationship("Document", back_populates="user", cascade="all, delete-orphan")
+    research_sessions = db.relationship("ResearchSession", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         return f"<User id={self.id} firebase_uid='{self.firebase_uid}' email='{self.email}'>"
