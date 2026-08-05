@@ -18,6 +18,10 @@ class Config:
     # Security setting
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-please-change-in-prod")
     
+    # Database setting (Strict PostgreSQL)
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
+    SQLALCHEMY_TRACK_MODIFICATIONS = os.getenv("SQLALCHEMY_TRACK_MODIFICATIONS", "False").lower() in ("true", "1", "yes")
+    
     # NVIDIA API (placeholder for RAG phase)
     NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
     

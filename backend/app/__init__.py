@@ -6,6 +6,7 @@ from app.utils.logging import setup_logger
 from app.utils.error_handlers import register_error_handlers
 from app.routes import register_routes
 from app.services.warmup import warmup_services
+from database import init_db
 
 STARTUP_TIME = time.time()
 
@@ -22,6 +23,10 @@ def create_app():
     # 3. Setup logging
     logger = setup_logger(log_level=app.config.get("LOG_LEVEL", "INFO"))
     logger.info(f"Initializing app in {app.config.get('FLASK_ENV')} mode...")
+    
+    # 4. Initialize Database (SQLAlchemy)
+    init_db(app)
+    logger.info("Database instance initialized with application.")
     
     # 4. Enable Cross-Origin Resource Sharing (CORS)
     CORS(app, resources={r"/api/*": {"origins": "*"}})

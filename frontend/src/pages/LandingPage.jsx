@@ -16,11 +16,23 @@ import {
   Lock,
   Cpu,
   Globe2,
-  Users,
-  Quote,
-  HelpCircle,
   Sun,
-  Moon
+  Moon,
+  Upload,
+  FileCode,
+  Split,
+  Binary,
+  Database,
+  GitMerge,
+  ArrowDownUp,
+  Bot,
+  Terminal,
+  Server,
+  Code2,
+  Box,
+  Key,
+  Check,
+  Workflow
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -37,143 +49,105 @@ export default function LandingPage() {
     }
   }, [isAuthenticated, navigate]);
 
-  const features = [
-    {
-      icon: Layers,
-      title: 'Hybrid Retrieval Engine',
-      description: 'Combines dense FAISS vector embeddings with BM25 keyword search using Reciprocal Rank Fusion (RRF).',
-    },
-    {
-      icon: Cpu,
-      title: 'Cross-Encoder Reranking',
-      description: 'Re-scores candidate evidence passages with HuggingFace Cross-Encoders for pinpoint precision.',
-    },
-    {
-      icon: ShieldCheck,
-      title: '100% Citation Grounding',
-      description: 'Every answer snippet is explicitly cited with precise document names and page numbers.',
-    },
-    {
-      icon: BarChart3,
-      title: 'RAGAS Quality Metrics',
-      description: 'Automated evaluation framework measuring Faithfulness, Context Recall, Answer Relevancy, and Precision.',
-    },
-    {
-      icon: Sparkles,
-      title: 'Prompt Optimization Studio',
-      description: 'Fine-tune system prompts with context budget minification, token counter, and live template preview.',
-    },
-    {
-      icon: Zap,
-      title: 'Low-Latency NVIDIA LLM',
-      description: 'Powered by NVIDIA Llama-3.1 8B Instruct with persistent connection pooling for sub-3s response speeds.',
-    },
-  ];
-
-  const workflowSteps = [
+  const pipelineSteps = [
     {
       step: '01',
-      title: 'Ingest Research PDFs',
-      desc: 'Upload multi-page research papers, documentation, or textbooks. Text is extracted, chunked, and tokenized automatically.',
+      title: 'Upload PDF',
+      icon: Upload,
+      description: 'Ingest multi-page research papers and documentation.',
     },
     {
       step: '02',
-      title: 'Hybrid Vector & Lexical Indexing',
-      desc: 'Generates 384-dim SentenceTransformer embeddings into FAISS while indexing key terms into BM25.',
+      title: 'Document Parsing',
+      icon: FileCode,
+      description: 'Extract raw text, layout structure, and metadata.',
     },
     {
       step: '03',
-      title: 'Reranked RAG Chat',
-      desc: 'Query the AI assistant to receive grounded answers complete with inline citations [Paper, Page X].',
+      title: 'Semantic Chunking',
+      icon: Split,
+      description: 'Split text into overlapping chunks for context preservation.',
     },
     {
       step: '04',
-      title: 'Automated Audit',
-      desc: 'Run automated RAGAS audits to verify context recall, hallucination prevention, and faithfulness scores.',
+      title: 'Embedding Generation',
+      icon: Binary,
+      description: 'Compute 384-dim dense vectors with SentenceTransformers.',
+    },
+    {
+      step: '05',
+      title: 'FAISS Vector Database',
+      icon: Database,
+      description: 'Index embeddings into high-performance FAISS vector store.',
+    },
+    {
+      step: '06',
+      title: 'Hybrid Retrieval',
+      icon: GitMerge,
+      description: 'Combine FAISS vector search + BM25 keyword matching via RRF.',
+    },
+    {
+      step: '07',
+      title: 'Cross-Encoder Reranking',
+      icon: ArrowDownUp,
+      description: 'Re-score top candidates using Hugging Face Cross-Encoder.',
+    },
+    {
+      step: '08',
+      title: 'LLM Response Gen',
+      icon: Bot,
+      description: 'Prompt NVIDIA Llama-3.1 8B with top reranked evidence.',
+    },
+    {
+      step: '09',
+      title: 'Source-Cited Answer',
+      icon: ShieldCheck,
+      description: 'Synthesize verifiable response with page-level citations.',
     },
   ];
 
-  const pricingPlans = [
-    {
-      name: 'Starter Academic',
-      price: '$0',
-      period: 'Forever free',
-      desc: 'Ideal for students, individual researchers, and open-source testing.',
-      features: [
-        'Up to 50 PDF Document Ingestions',
-        'Hybrid Semantic + BM25 Search',
-        'Cross-Encoder Candidate Reranking',
-        'Standard RAG Citation Grounding',
-        'Basic Evaluation Metrics',
-      ],
-      cta: 'Start Free Trial',
-      popular: false,
-    },
-    {
-      name: 'Pro Researcher',
-      price: '$29',
-      period: 'per user / month',
-      desc: 'For professional researchers, data scientists, and research labs.',
-      features: [
-        'Unlimited PDF Document Storage',
-        'High-Speed NVIDIA Llama-3.1 LLM',
-        'Full RAGAS Quality Audit Suite',
-        'Prompt Minification & Studio',
-        'Exportable Evaluation Reports',
-        'Priority API Latency Route',
-      ],
-      cta: 'Get Started Pro',
-      popular: true,
-    },
-    {
-      name: 'Enterprise Lab',
-      price: 'Custom',
-      period: 'Tailored deployment',
-      desc: 'Dedicated infrastructure with custom LLM endpoints & security SLA.',
-      features: [
-        'Custom Fine-Tuned Embedding Models',
-        'On-Premise / Private Cloud Vector Store',
-        'Dedicated Connection Pools',
-        'Custom Evaluation Metrics',
-        'Role-Based Admin Access',
-        '24/7 Priority Support SLA',
-      ],
-      cta: 'Contact Sales',
-      popular: false,
-    },
+  const techStack = [
+    { name: 'Python', category: 'Backend Engine', icon: Terminal, color: 'text-amber-500 bg-amber-500/10 border-amber-500/20' },
+    { name: 'Flask', category: 'REST API', icon: Server, color: 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20' },
+    { name: 'React', category: 'Frontend UI', icon: Code2, color: 'text-sky-500 bg-sky-500/10 border-sky-500/20' },
+    { name: 'Tailwind CSS', category: 'Design System', icon: Sparkles, color: 'text-cyan-500 bg-cyan-500/10 border-cyan-500/20' },
+    { name: 'FAISS', category: 'Vector Search', icon: Database, color: 'text-indigo-500 bg-indigo-500/10 border-indigo-500/20' },
+    { name: 'BM25', category: 'Lexical Retrieval', icon: Search, color: 'text-violet-500 bg-violet-500/10 border-violet-500/20' },
+    { name: 'Sentence Transformers', category: 'Dense Embeddings', icon: Binary, color: 'text-blue-500 bg-blue-500/10 border-blue-500/20' },
+    { name: 'Hugging Face Cross-Encoder', category: 'Passage Reranker', icon: ArrowDownUp, color: 'text-orange-500 bg-orange-500/10 border-orange-500/20' },
+    { name: 'NVIDIA NIM / Llama', category: 'LLM Inference', icon: Cpu, color: 'text-green-500 bg-green-500/10 border-green-500/20' },
+    { name: 'Firebase Authentication', category: 'Identity Provider', icon: Key, color: 'text-amber-600 bg-amber-600/10 border-amber-600/20' },
+    { name: 'Docker', category: 'Containerization', icon: Box, color: 'text-blue-600 bg-blue-600/10 border-blue-600/20' },
+    { name: 'Render', category: 'Cloud Hosting', icon: Globe2, color: 'text-purple-500 bg-purple-500/10 border-purple-500/20' },
   ];
 
-  const testimonials = [
-    {
-      quote:
-        'Evidence AI completely transformed how our team reads through literature. The inline citations down to exact page numbers save us hours of manual fact-checking.',
-      author: 'Dr. Aris Thorne',
-      title: 'Lead AI Researcher, BioTech Labs',
-    },
-    {
-      quote:
-        'The transparent breakdown between BM25 lexical search and FAISS vector retrieval makes this the best RAG platform for production auditing.',
-      author: 'Elena Rostova',
-      title: 'Senior NLP Engineer, DeepTech Inc.',
-    },
+  const keyFeatures = [
+    { title: 'Evidence-Grounded Answers', desc: 'Strict anti-hallucination system prompt constraints ensuring responses rely solely on retrieved evidence context.' },
+    { title: 'Hybrid Retrieval', desc: 'Dual-stage retrieval fusing FAISS semantic vector search with BM25 sparse keyword matching using Reciprocal Rank Fusion (RRF).' },
+    { title: 'Cross-Encoder Reranking', desc: 'Precision re-scoring of candidate passages with ms-marco-MiniLM-L-6-v2 for optimal context relevance.' },
+    { title: 'PDF Document Chat', desc: 'Interactive chat interface to query multi-page PDF research papers, documentation, and technical literature.' },
+    { title: 'Source Citations', desc: 'Every AI answer includes direct inline citations pinpointing exact source document names and page numbers.' },
+    { title: 'Google Authentication', desc: 'Secure single sign-on powered by Firebase Authentication with Google Identity Provider integration.' },
+    { title: 'Enterprise Dashboard', desc: 'Comprehensive control center to manage uploaded documents, inspect vector stores, and run search diagnostics.' },
+    { title: 'RAG Evaluation Metrics', desc: 'Automated auditing framework measuring Faithfulness, Context Recall, Answer Relevancy, and Context Precision.' },
   ];
 
   const faqs = [
     {
-      q: 'How does Evidence AI prevent LLM hallucinations?',
-      a: 'We use a strict two-stage retrieval pipeline (FAISS + BM25 + Cross-Encoder) coupled with a system prompt that mandates explicit evidence citations. If relevant context is missing, the model explicitly notifies the user.',
+      q: 'What is Evidence AI?',
+      a: 'Evidence AI is an open-source, evidence-grounded Retrieval-Augmented Generation (RAG) research platform built to showcase advanced information retrieval, cross-encoder reranking, and LLM context synthesis.',
     },
     {
-      q: 'Can I test individual search components like BM25 or Reranking?',
-      a: 'Yes! The platform includes dedicated diagnostic tools for Semantic Search, BM25 Search, Hybrid Fusion, and Cross-Encoder Reranking so you can analyze retrieval performance independently.',
+      q: 'How does the hybrid search engine work?',
+      a: 'The system indexes documents into both a FAISS dense vector index (SentenceTransformers) and a BM25 sparse keyword index. Queries retrieve candidates from both indices, which are then merged using Reciprocal Rank Fusion (RRF).',
     },
     {
-      q: 'How is response latency kept low?',
-      a: 'We use persistent HTTP session connection pooling for the NVIDIA Llama-3.1 API and maintain singletons in memory for SentenceTransformers and FAISS indexes.',
+      q: 'How are hallucinations prevented?',
+      a: 'Top retrieved passages undergo a second pass through a Cross-Encoder reranker. The LLM system prompt explicitly mandates citing source documents and page numbers, instructing the model to refuse answering if context is insufficient.',
     },
     {
-      q: 'What formats of documents are supported?',
-      a: 'Currently, multi-page PDFs with text layers are fully supported. OCR and text file formats are in active development.',
+      q: 'Can I test individual search components?',
+      a: 'Yes! The application includes dedicated diagnostic pages for testing Semantic Search, BM25 Search, Hybrid Fusion, and Reranking independently.',
     },
   ];
 
@@ -182,23 +156,23 @@ export default function LandingPage() {
       {/* 1. Public Top Navigation */}
       <header className={`sticky top-0 z-50 backdrop-blur-md border-b ${isDark ? 'bg-zinc-950/90 border-zinc-800' : 'bg-white/90 border-zinc-200'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-3 group cursor-pointer" title="Go to Dashboard">
+          <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-3 group cursor-pointer" title="Evidence AI">
             <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-900 font-bold shadow-xs">
               <BrainCircuit className="w-4 h-4" />
             </div>
             <div>
               <span className="font-bold text-sm tracking-tight text-main">Evidence AI</span>
               <span className="ml-2 text-[10px] font-mono px-2 py-0.5 rounded font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                SaaS v1.0
+                RAG Architecture
               </span>
             </div>
           </Link>
 
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center gap-6 text-xs font-medium">
-            <a href="#features" className="text-sub hover:text-main transition-colors">Features</a>
-            <a href="#workflow" className="text-sub hover:text-main transition-colors">How it Works</a>
-            <a href="#pricing" className="text-sub hover:text-main transition-colors">Pricing</a>
+            <a href="#pipeline" className="text-sub hover:text-main transition-colors">RAG Pipeline</a>
+            <a href="#techstack" className="text-sub hover:text-main transition-colors">Tech Stack</a>
+            <a href="#features" className="text-sub hover:text-main transition-colors">Key Features</a>
             <a href="#faq" className="text-sub hover:text-main transition-colors">FAQs</a>
           </nav>
 
@@ -233,10 +207,10 @@ export default function LandingPage() {
                   Log In
                 </Link>
                 <Link
-                  to="/signup"
+                  to="/login"
                   className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-semibold shadow-xs transition-all"
                 >
-                  Get Started
+                  Explore Platform
                 </Link>
               </>
             )}
@@ -248,33 +222,34 @@ export default function LandingPage() {
       <section className="relative overflow-hidden pt-16 pb-16 lg:pt-24 lg:pb-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-mono font-medium bg-zinc-100 dark:bg-zinc-900 text-zinc-700 dark:text-zinc-300 border border-theme mb-6">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-            Next-Generation Evidence-Grounded AI Research Assistant
+            <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+            AI Engineering Portfolio • Enterprise RAG Assistant
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold tracking-tight max-w-4xl mx-auto leading-tight">
-            Research with Zero Hallucinations and 100% Citations
+            AI-Powered Research. Grounded in Evidence.
           </h1>
 
           <p className={`mt-4 text-sm sm:text-base max-w-2xl mx-auto leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-            Accelerate literature reviews, paper analysis, and academic writing using Hybrid Vector-Lexical Search, Cross-Encoder Reranking, and automated RAGAS quality auditing.
+            Demonstrating enterprise-grade Retrieval-Augmented Generation using Hybrid Vector + Lexical Search, Cross-Encoder Reranking, and NVIDIA Llama-3.1 inference with verifiable page citations.
           </p>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center items-center">
             <button
-              onClick={() => navigate(isAuthenticated ? '/dashboard' : '/signup')}
+              onClick={() => navigate(isAuthenticated ? '/dashboard' : '/login')}
               className="w-full sm:w-auto px-6 py-3 rounded-lg bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-semibold text-xs shadow-xs transition-all flex items-center justify-center gap-2"
             >
-              Start Free Research Workspace
+              Access RAG Workspace
               <ArrowRight className="w-4 h-4" />
             </button>
             <a
-              href="#workflow"
+              href="#pipeline"
               className={`w-full sm:w-auto px-6 py-3 rounded-lg font-semibold text-xs border transition-all flex items-center justify-center gap-2 ${
                 isDark ? 'border-zinc-800 hover:bg-zinc-900 text-zinc-300' : 'border-zinc-300 hover:bg-zinc-100 text-zinc-700'
               }`}
             >
-              Explore Architecture
+              <Workflow className="w-4 h-4 text-emerald-500" />
+              View RAG Pipeline
             </a>
           </div>
 
@@ -286,7 +261,7 @@ export default function LandingPage() {
                   <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
                   <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                  <span className="ml-2 text-xs font-mono text-muted-custom">evidence-ai // RAG Studio Console</span>
+                  <span className="ml-2 text-xs font-mono text-muted-custom">evidence-ai // RAG Architecture Console</span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-emerald-600 dark:text-emerald-400 font-mono">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -319,127 +294,133 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. Features Section */}
+      {/* 3. System Architecture / RAG Pipeline Section */}
+      <section id="pipeline" className={`py-16 border-t ${isDark ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-200 bg-zinc-100/50'}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded font-mono text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 mb-3">
+              <Workflow className="w-3.5 h-3.5" />
+              END-TO-END DATAFLOW
+            </div>
+            <h2 className="text-2xl sm:text-4xl font-bold tracking-tight">
+              RAG Pipeline Architecture
+            </h2>
+            <p className={`mt-2 text-xs sm:text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+              A modular 9-stage pipeline designed for precise context retrieval, re-ranking, and citation-backed LLM response generation.
+            </p>
+          </div>
+
+          {/* Workflow Pipeline Display */}
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-4">
+            {pipelineSteps.map((stepItem, idx) => {
+              const StepIcon = stepItem.icon;
+              return (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-xl border relative transition-all hover:scale-[1.01] ${
+                    isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'
+                  }`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 flex items-center justify-center">
+                      <StepIcon className="w-4 h-4" />
+                    </div>
+                    <span className="text-xs font-mono font-bold text-muted-custom px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800">
+                      {stepItem.step}
+                    </span>
+                  </div>
+                  <h3 className="text-sm font-bold mb-1 text-main">{stepItem.title}</h3>
+                  <p className={`text-xs leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                    {stepItem.description}
+                  </p>
+
+                  {idx < pipelineSteps.length - 1 && (
+                    <div className="hidden lg:block absolute -right-2.5 top-1/2 -translate-y-1/2 z-10 text-muted-custom">
+                      {/* Arrow indicator between steps if horizontal grid */}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. Technology Stack Section */}
+      <section id="techstack" className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <span className="text-xs font-semibold text-muted-custom font-mono uppercase tracking-widest">Engineering Components</span>
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mt-1">
+              Technology Stack
+            </h2>
+            <p className={`mt-2 text-xs sm:text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+              Built using industry-standard machine learning libraries, vector databases, and modern web frameworks.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {techStack.map((tech, idx) => {
+              const TechIcon = tech.icon;
+              return (
+                <div
+                  key={idx}
+                  className={`p-4 rounded-xl border flex items-center gap-3 transition-all hover:border-zinc-400 dark:hover:border-zinc-700 ${
+                    isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-lg border flex items-center justify-center flex-shrink-0 ${tech.color}`}>
+                    <TechIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-xs font-bold text-main">{tech.name}</h3>
+                    <span className="text-[10px] text-muted-custom font-mono">{tech.category}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Key Features Section */}
       <section id="features" className={`py-16 border-t ${isDark ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-200 bg-zinc-100/50'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">
-              Engineered for Rigorous Academic & Clinical Research
+              Key Capabilities
             </h2>
             <p className={`mt-2 text-xs sm:text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-              Built on production-grade RAG principles so you can query complex technical literature with verifiable accuracy.
+              Core features designed for verifiable academic research and rigorous document analysis.
             </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f, i) => (
-              <div
-                key={i}
-                className={`p-5 rounded-xl border transition-all ${
-                  isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'
-                }`}
-              >
-                <div className="w-10 h-10 rounded-lg bg-muted text-main border border-theme flex items-center justify-center mb-4">
-                  <f.icon className="w-5 h-5 text-muted-custom" />
-                </div>
-                <h3 className="text-sm font-bold mb-1.5">{f.title}</h3>
-                <p className={`text-xs leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>{f.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 4. Workflow Steps */}
-      <section id="workflow" className="py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="text-xs font-semibold text-muted-custom font-mono uppercase tracking-widest">End-to-End Pipeline</span>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mt-1">
-              How Evidence AI Works
-            </h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-            {workflowSteps.map((ws, idx) => (
+            {keyFeatures.map((feat, idx) => (
               <div
                 key={idx}
-                className={`p-5 rounded-xl border relative ${
+                className={`p-5 rounded-xl border flex flex-col justify-between ${
                   isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'
                 }`}
               >
-                <span className="text-3xl font-bold text-muted-custom font-mono mb-3 block">{ws.step}</span>
-                <h3 className="text-sm font-bold mb-1.5">{ws.title}</h3>
-                <p className={`text-xs leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>{ws.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 5. Pricing Table */}
-      <section id="pricing" className={`py-16 border-t ${isDark ? 'border-zinc-900 bg-zinc-950' : 'border-zinc-200 bg-zinc-100/50'}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight">Flexible Plans for Every Researcher</h2>
-            <p className={`mt-2 text-xs sm:text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-              Transparent pricing with no hidden tokens or surprise fees.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {pricingPlans.map((plan, i) => (
-              <div
-                key={i}
-                className={`p-6 rounded-xl border flex flex-col justify-between relative ${
-                  plan.popular
-                    ? 'bg-zinc-900 dark:bg-zinc-900 border-zinc-700 text-white shadow-xl'
-                    : isDark
-                    ? 'bg-zinc-900 border-zinc-800'
-                    : 'bg-white border-zinc-200'
-                }`}
-              >
-                {plan.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-2.5 py-0.5 rounded font-mono text-[10px] font-semibold bg-emerald-500 text-zinc-950 uppercase tracking-wider">
-                    Most Popular
-                  </span>
-                )}
                 <div>
-                  <h3 className="text-base font-bold">{plan.name}</h3>
-                  <p className="text-xs mt-1 text-muted-custom">{plan.desc}</p>
-                  <div className="mt-4 mb-4">
-                    <span className="text-3xl font-bold font-mono">{plan.price}</span>
-                    <span className="text-xs ml-1.5 text-muted-custom font-mono">{plan.period}</span>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-5 h-5 rounded bg-emerald-500/10 text-emerald-500 flex items-center justify-center flex-shrink-0">
+                      <Check className="w-3.5 h-3.5 stroke-[3]" />
+                    </div>
+                    <h3 className="text-xs font-bold text-main">{feat.title}</h3>
                   </div>
-                  <ul className="space-y-2.5 text-xs">
-                    {plan.features.map((feat, fIdx) => (
-                      <li key={fIdx} className="flex items-center gap-2">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <p className={`text-xs leading-relaxed ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                    {feat.desc}
+                  </p>
                 </div>
-
-                <button
-                  onClick={() => navigate('/signup')}
-                  className={`mt-6 w-full py-2.5 rounded-lg font-medium text-xs transition-all ${
-                    plan.popular
-                      ? 'bg-zinc-100 text-zinc-900 hover:bg-white shadow-xs font-semibold'
-                      : isDark
-                      ? 'bg-zinc-800 hover:bg-zinc-700 text-white'
-                      : 'bg-zinc-100 hover:bg-zinc-200 text-zinc-900'
-                  }`}
-                >
-                  {plan.cta}
-                </button>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* 6. Testimonials & FAQ */}
+      {/* 6. FAQ Section */}
       <section id="faq" className="py-16">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
@@ -479,13 +460,14 @@ export default function LandingPage() {
             <div className="w-7 h-7 rounded bg-zinc-800 flex items-center justify-center text-white font-bold text-xs">
               <BrainCircuit className="w-4 h-4" />
             </div>
-            <span className="font-bold text-xs text-white tracking-tight">Evidence-Grounded AI Research Assistant</span>
+            <span className="font-bold text-xs text-white tracking-tight">Evidence AI • RAG Research Platform</span>
           </div>
           <p className="text-[11px] text-zinc-500 font-mono">
-            © {new Date().getFullYear()} Evidence AI Inc. All rights reserved. Powered by RAGAS Framework & NVIDIA Llama 3.1.
+            © {new Date().getFullYear()} Evidence AI. Built with Flask, FAISS, SentenceTransformers & NVIDIA Llama 3.1.
           </p>
         </div>
       </footer>
     </div>
   );
 }
+
