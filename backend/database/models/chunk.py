@@ -12,7 +12,7 @@ class Chunk(db.Model):
     __tablename__ = "chunks"
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    chunk_uuid = db.Column(db.String(36), unique=True, index=True, nullable=False)
+    chunk_uuid = db.Column(db.String(255), unique=True, index=True, nullable=False)
     document_id = db.Column(db.Integer, db.ForeignKey("documents.id", ondelete="CASCADE"), index=True, nullable=False)
     page_number = db.Column(db.Integer, default=1, nullable=False)
     chunk_index = db.Column(db.Integer, nullable=False)

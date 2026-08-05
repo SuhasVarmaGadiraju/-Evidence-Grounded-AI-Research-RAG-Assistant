@@ -7,6 +7,7 @@ from app.routes.prompt import prompt_bp
 from app.routes.chat import chat_bp
 from app.routes.evaluation import evaluation_bp
 from app.routes.database_routes import database_bp
+from app.routes.auth import auth_bp
 
 def register_routes(app):
     """Registers all API blueprints under the '/api' prefix."""
@@ -19,6 +20,4 @@ def register_routes(app):
     app.register_blueprint(chat_bp, url_prefix="/api")
     app.register_blueprint(evaluation_bp, url_prefix="/api")
     app.register_blueprint(database_bp, url_prefix="/api")
-
-
-
+    app.register_blueprint(auth_bp, url_prefix="/api")

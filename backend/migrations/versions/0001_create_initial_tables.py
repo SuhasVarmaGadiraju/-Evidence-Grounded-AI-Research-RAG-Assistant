@@ -56,7 +56,7 @@ def upgrade():
     op.create_table(
         'chunks',
         sa.Column('id', sa.Integer(), autoincrement=True, nullable=False),
-        sa.Column('chunk_uuid', sa.String(length=36), nullable=False),
+        sa.Column('chunk_uuid', sa.String(length=255), nullable=False),
         sa.Column('document_id', sa.Integer(), nullable=False),
         sa.Column('page_number', sa.Integer(), server_default='1', nullable=False),
         sa.Column('chunk_index', sa.Integer(), nullable=False),

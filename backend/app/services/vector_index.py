@@ -365,8 +365,27 @@ class FAISSIndexService(BaseVectorIndex):
             })
 
         logger.info(f"Adding document {doc_id} with {len(chunks)} chunks to FAISS index...")
+        start_vector_id = self._index.ntotal if self._index is not None else 0
         self.add_embeddings(embeddings, metadata_list)
         self.save_index()
+
+        # Synchronize faiss_vector_id into PostgreSQL chunks table
+        try:
+            from database.database import db
+            from database.models.document import Document
+            from database.models.chunk import Chunk
+
+            doc = Document.query.filter_by(document_uuid=doc_id).first()
+            if doc:
+                db_chunks = Chunk.query.filter_by(document_id=doc.id).order_by(Chunk.chunk_index).all()
+                for idx, db_c in enumerate(db_chunks):
+                    if idx < len(chunks):
+                        db_c.faiss_vector_id = start_vector_id + idx
+                doc.status = "Indexed"
+                db.session.commit()
+                logger.info(f"Updated PostgreSQL faiss_vector_ids for document {doc_id} starting at index {start_vector_id}")
+        except Exception as sync_err:
+            logger.warning(f"Could not synchronize faiss_vector_ids in PostgreSQL for document {doc_id}: {sync_err}")
 
     def rebuild_index(self):
         """
