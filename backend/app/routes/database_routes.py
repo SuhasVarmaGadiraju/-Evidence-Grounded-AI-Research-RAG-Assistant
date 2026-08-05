@@ -1,5 +1,5 @@
 import logging
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, current_app
 from sqlalchemy import text
 from database import db
 
@@ -11,8 +11,14 @@ database_bp = Blueprint("database", __name__)
 def database_health():
     """
     Checks PostgreSQL connection status and returns JSON status response.
-    Gracefully cleans up session state if connection fails.
+    Returns graceful disabled status when running without PostgreSQL.
     """
+    if not current_app.config.get("DATABASE_ENABLED", True):
+        return jsonify({
+            "database": "disabled",
+            "status": "running_without_database"
+        }), 200
+
     try:
         db.session.execute(text("SELECT 1"))
         return jsonify({

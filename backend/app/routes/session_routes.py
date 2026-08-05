@@ -1,6 +1,6 @@
 import logging
 from typing import Tuple, Any, Dict
-from flask import Blueprint, request, jsonify, Response
+from flask import Blueprint, request, jsonify, Response, current_app
 
 from app.services.session_service import (
     create_session,
@@ -14,6 +14,15 @@ from app.services.session_service import (
 logger = logging.getLogger("rag_backend.routes.session_routes")
 
 session_bp = Blueprint("session_routes", __name__)
+
+@session_bp.before_request
+def check_database_enabled():
+    """Intercepts session requests when PostgreSQL is disabled."""
+    if not current_app.config.get("DATABASE_ENABLED", True):
+        return jsonify({
+            "success": False,
+            "message": "Persistent sessions require PostgreSQL."
+        }), 200
 
 def extract_user_info() -> Dict[str, Any]:
     """Extracts optional authenticated user headers from request."""

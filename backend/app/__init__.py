@@ -25,8 +25,11 @@ def create_app():
     logger.info(f"Initializing app in {app.config.get('FLASK_ENV')} mode...")
     
     # 4. Initialize Database (SQLAlchemy)
-    init_db(app)
-    logger.info("Database instance initialized with application.")
+    try:
+        init_db(app)
+    except Exception as e:
+        logger.warning(f"Running without PostgreSQL. Database features are disabled.")
+        app.config["DATABASE_ENABLED"] = False
     
     # 4. Enable Cross-Origin Resource Sharing (CORS)
     CORS(app, resources={r"/api/*": {"origins": "*"}})

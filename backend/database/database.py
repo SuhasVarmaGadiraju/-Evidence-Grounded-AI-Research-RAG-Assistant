@@ -11,14 +11,19 @@ migrate = Migrate()
 def init_db(app):
     """
     Initializes SQLAlchemy and Flask-Migrate with the Flask app instance.
-    Enforces strict database configuration without silent fallbacks.
+    If DATABASE_URL is not configured, disables database features gracefully.
     """
     db_uri = app.config.get("SQLALCHEMY_DATABASE_URI")
     if not db_uri:
-        logger.error("DATABASE_URL / SQLALCHEMY_DATABASE_URI is not set in application configuration.")
-        raise ValueError("Missing required database configuration: DATABASE_URL")
-    
-    db.init_app(app)
-    migrate.init_app(app, db)
-    logger.info("SQLAlchemy database instance and Flask-Migrate initialized successfully.")
+        logger.warning("Running without PostgreSQL. Database features are disabled.")
+        app.config["DATABASE_ENABLED"] = False
+        return
 
+    try:
+        db.init_app(app)
+        migrate.init_app(app, db)
+        app.config["DATABASE_ENABLED"] = True
+        logger.info("PostgreSQL initialized successfully.")
+    except Exception as e:
+        logger.warning(f"Running without PostgreSQL. Database features are disabled.")
+        app.config["DATABASE_ENABLED"] = False

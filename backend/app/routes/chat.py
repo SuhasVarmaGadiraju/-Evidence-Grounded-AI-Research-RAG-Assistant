@@ -102,6 +102,11 @@ def chat_new_session_endpoint():
     POST endpoint creating a new research session in PostgreSQL.
     Returns: JSON with session_id
     """
+    if not current_app.config.get("DATABASE_ENABLED", True):
+        return jsonify({
+            "success": False,
+            "message": "Persistent sessions require PostgreSQL."
+        }), 200
     try:
         data = request.get_json(silent=True) or {}
         title = data.get("title")
@@ -123,6 +128,11 @@ def chat_list_sessions_endpoint():
     """
     GET endpoint returning all persistent research sessions sorted by latest activity.
     """
+    if not current_app.config.get("DATABASE_ENABLED", True):
+        return jsonify({
+            "success": False,
+            "message": "Persistent sessions require PostgreSQL."
+        }), 200
     try:
         sessions = list_sessions()
         serialized = [s.to_dict() for s in sessions]
@@ -142,6 +152,11 @@ def chat_get_history_endpoint(session_id: str):
     """
     GET endpoint returning stored message history for a specific research session from PostgreSQL.
     """
+    if not current_app.config.get("DATABASE_ENABLED", True):
+        return jsonify({
+            "success": False,
+            "message": "Persistent sessions require PostgreSQL."
+        }), 200
     try:
         history_payload = load_session_history(session_id)
         return jsonify({
@@ -167,6 +182,11 @@ def chat_delete_session_endpoint(session_id: str):
     """
     DELETE endpoint deleting a specific research session from PostgreSQL (cascading messages & logs).
     """
+    if not current_app.config.get("DATABASE_ENABLED", True):
+        return jsonify({
+            "success": False,
+            "message": "Persistent sessions require PostgreSQL."
+        }), 200
     try:
         deleted = delete_session(session_id)
         if not deleted:
@@ -210,16 +230,20 @@ def chat_endpoint():
     profiler = PipelineProfiler()
     query_hash = hashlib.sha256(clean_query.encode("utf-8")).hexdigest()[:12]
 
-    # Step 1: Session Resolution & Multi-Turn History Loading from PostgreSQL
+    # Step 1: Session Resolution & Multi-Turn History Loading
     with profiler.profile("session_retrieval"):
-        session_record = get_session(session_id) if session_id else None
-        if not session_record:
-            session_record = create_session()
-            session_id = session_record.session_uuid
-        else:
-            session_id = session_record.session_uuid
+        if current_app.config.get("DATABASE_ENABLED", True):
+            session_record = get_session(session_id) if session_id else None
+            if not session_record:
+                session_record = create_session()
+                session_id = session_record.session_uuid
+            else:
+                session_id = session_record.session_uuid
 
-        conversation_history = format_multi_turn_history(session_id, max_turns=10)
+            conversation_history = format_multi_turn_history(session_id, max_turns=10)
+        else:
+            session_id = session_id or "session_no_db"
+            conversation_history = []
 
     try:
         rerank_service = CrossEncoderService()
@@ -325,29 +349,32 @@ def chat_endpoint():
             if current_app.config.get("CACHE_ENABLED", True):
                 llm_cache.set(llm_cache_key, llm_response)
 
-        # Step 5: Transactional Persistence in PostgreSQL
+        # Step 5: Persistence & Response Formatting
         with profiler.profile("json_serialization"):
             timing_breakdown = profiler.get_breakdown()
             total_latency = timing_breakdown["total"]
 
-            # 5a. Append Message turn into PostgreSQL
-            message_obj, updated_session = append_message_turn(
-                session_id_or_uuid=session_id,
-                user_question=clean_query,
-                assistant_answer=str(llm_response.get("answer", "")),
-                latency=total_latency,
-                token_count=int(llm_response.get("total_tokens", 0)),
-                role="assistant"
-            )
+            if current_app.config.get("DATABASE_ENABLED", True):
+                # 5a. Append Message turn into PostgreSQL
+                message_obj, updated_session = append_message_turn(
+                    session_id_or_uuid=session_id,
+                    user_question=clean_query,
+                    assistant_answer=str(llm_response.get("answer", "")),
+                    latency=total_latency,
+                    token_count=int(llm_response.get("total_tokens", 0)),
+                    role="assistant"
+                )
 
-            # 5b. Persist evidence attribution logs in PostgreSQL
-            save_retrieved_chunks(
-                message_id=message_obj.id,
-                chunks=clean_included_chunks,
-                strategy="Hybrid RRF"
-            )
+                # 5b. Persist evidence attribution logs in PostgreSQL
+                save_retrieved_chunks(
+                    message_id=message_obj.id,
+                    chunks=clean_included_chunks,
+                    strategy="Hybrid RRF"
+                )
 
-            conversation_length = len(updated_session.messages) if updated_session.messages else 1
+                conversation_length = len(updated_session.messages) if updated_session.messages else 1
+            else:
+                conversation_length = 1
 
             retrieval_latency_ms = {
                 "hybrid_ms": round(hybrid_ms, 2),
@@ -393,10 +420,11 @@ def chat_endpoint():
                 "timing_summary": formatted_summary
             }
 
+        msg_id_log = message_obj.id if (current_app.config.get("DATABASE_ENABLED", True) and 'message_obj' in locals()) else 'N/A'
         logger.info(
             f"Chat Endpoint Success | "
             f"SessionID: {session_id[:12]}... | "
-            f"MessageID: {message_obj.id} | "
+            f"MessageID: {msg_id_log} | "
             f"ConversationLength: {conversation_length} | "
             f"RetrievalTotal: {retrieval_latency_ms['total_ms']}ms | "
             f"Latency: {total_latency:.4f}s"
