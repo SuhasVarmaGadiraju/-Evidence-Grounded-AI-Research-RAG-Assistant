@@ -31,10 +31,12 @@ export default function HybridSearch() {
     setError(null);
     setResults(null);
 
+    const parsedTopK = typeof kVal === 'object' ? parseInt(kVal?.target?.value || 5, 10) : parseInt(kVal || 5, 10);
+
     try {
       const response = await api.post('/retrieval/hybrid', {
         query: searchQuery.trim(),
-        top_k: parseInt(kVal, 10) || 5
+        top_k: parsedTopK || 5
       });
 
       if (response.success) {
@@ -58,6 +60,11 @@ export default function HybridSearch() {
   const handleSubmit = (e) => {
     e.preventDefault();
     executeSearch(query, topK);
+  };
+
+  const handleTopKChange = (e) => {
+    const val = e?.target?.value !== undefined ? e.target.value : e;
+    setTopK(val);
   };
 
   const getSourceBadge = (source) => {
@@ -120,7 +127,7 @@ export default function HybridSearch() {
               <label className="text-xs font-medium text-sub">Top-K Matches:</label>
               <CustomSelect
                 value={topK}
-                onChange={(val) => setTopK(val)}
+                onChange={handleTopKChange}
                 options={[
                   { value: 3, label: '3 Matches' },
                   { value: 5, label: '5 Matches' },
@@ -202,9 +209,7 @@ export default function HybridSearch() {
                     </div>
                   </div>
 
-                  <p className="text-xs text-sub leading-relaxed font-mono italic">
-                    "{chunk.text}"
-                  </p>
+                  <p className="text-xs text-sub italic leading-relaxed font-mono">"{chunk.text}"</p>
                 </div>
               );
             })}

@@ -256,9 +256,13 @@ export default function RerankSearch() {
         setError(response.message || "Cross-Encoder reranking failed.");
       }
     } catch (err) {
+      clearTimeout(stepTimer1);
+      clearTimeout(stepTimer2);
       console.error("Error during rerank search:", err);
       setError(err.message || "Failed to execute rerank search request.");
     } finally {
+      clearTimeout(stepTimer1);
+      clearTimeout(stepTimer2);
       setLoading(false);
       setLoadingStep(0);
     }

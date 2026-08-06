@@ -10,6 +10,11 @@ export default function SemanticSearch() {
   const [results, setResults] = useState(null);
   const [error, setError] = useState(null);
 
+  const handleTopKChange = (e) => {
+    const val = e?.target?.value !== undefined ? e.target.value : e;
+    setTopK(val);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!query.trim()) return;
@@ -18,10 +23,12 @@ export default function SemanticSearch() {
     setError(null);
     setResults(null);
 
+    const parsedTopK = typeof topK === 'object' ? parseInt(topK?.target?.value || 5, 10) : parseInt(topK || 5, 10);
+
     try {
       const response = await api.post('/retrieval/search', {
         query: query.trim(),
-        top_k: parseInt(topK, 10) || 5
+        top_k: parsedTopK || 5
       });
 
       if (response.success) {
@@ -72,7 +79,7 @@ export default function SemanticSearch() {
           <div className="flex justify-between items-center">
             <CustomSelect
               value={topK}
-              onChange={(e) => setTopK(e.target.value)}
+              onChange={handleTopKChange}
               options={[
                 { value: 3, label: '3 Matches' },
                 { value: 5, label: '5 Matches' },

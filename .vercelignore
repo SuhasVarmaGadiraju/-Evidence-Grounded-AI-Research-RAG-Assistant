@@ -1,0 +1,5 @@
+# Ignore backend application, virtual environments, and root python configuration
+backend/
+.venv/
+runtime.txt
+dummy.pdf
