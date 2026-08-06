@@ -105,8 +105,8 @@ class CrossEncoderService:
                     logger.info(f"Initializing CrossEncoder model '{model_name}' (lazy load)...")
                     start_time = time.time()
                     try:
-                        # Load CrossEncoder and save to singleton variable
-                        CrossEncoderService._model = CrossEncoder(model_name)
+                        # Load CrossEncoder explicitly on CPU to conserve RAM
+                        CrossEncoderService._model = CrossEncoder(model_name, device="cpu")
                         elapsed = time.time() - start_time
                         logger.info(f"Successfully loaded CrossEncoder model '{model_name}' in {elapsed:.2f} seconds.")
                     except Exception as e:

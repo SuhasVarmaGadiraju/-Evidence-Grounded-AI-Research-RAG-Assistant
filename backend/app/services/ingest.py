@@ -1,4 +1,6 @@
 import os
+import gc
+import time
 import uuid
 import logging
 from datetime import datetime, timezone
@@ -31,6 +33,16 @@ for path in [RAW_DIR, EXTRACTED_DIR, PROCESSED_DIR, CHUNKS_DIR, METADATA_DIR]:
     os.makedirs(path, exist_ok=True)
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
+
+def get_ram_usage_mb() -> str:
+    """Helper to monitor process RSS memory usage if psutil is installed."""
+    try:
+        import psutil
+        process = psutil.Process(os.getpid())
+        mem_bytes = process.memory_info().rss
+        return f"{mem_bytes / (1024 * 1024):.1f}MB"
+    except Exception:
+        return "N/A"
 
 def validate_pdf(file_stream: Any, filename: str) -> Tuple[bool, Optional[str]]:
     """
@@ -129,26 +141,31 @@ def process_ingestion(
     user_info: Optional[Dict[str, Any]] = None
 ) -> Dict[str, Any]:
     """
-    Process a single PDF upload:
-    1. Validate
-    2. Save raw file with unique UUID prefix & Create PostgreSQL Document record (if database enabled)
-    3. Extract text page-by-page
-    4. Clean text page-by-page
-    5. Generate chunks & bulk insert into PostgreSQL (if database enabled)
-    6. Generate embeddings
-    7. Add to FAISS index & sync vector IDs
-    8. Mark Completed & save JSON backup
-    9. On failure, handle cleanup and return error dictionary.
+    Process a single PDF upload with memory-optimized 10-step execution:
+    Step 1: Upload received
+    Step 2: PDF extraction
+    Step 3: Cleaning
+    Step 4: Chunking
+    Step 5: Loading embedding model (lazy load)
+    Step 6: Generating embeddings
+    Step 7: Saving embeddings
+    Step 8: Building FAISS
+    Step 9: Database update
+    Step 10: Ingestion finished
 
     Returns:
         Dict[str, Any]: Ingestion result payload with success flag and metadata.
     """
+    t_start = time.time()
     original_filename = file_storage.filename
     doc_id = str(uuid.uuid4())
     safe_name = secure_filename(original_filename)
     unique_filename = f"{doc_id}_{safe_name}"
     raw_path = os.path.join(RAW_DIR, unique_filename)
     doc_record: Optional[Document] = None
+
+    # Step 1: Upload received
+    logger.info(f"[Ingestion Step 1/10] Upload received for '{original_filename}' (RAM: {get_ram_usage_mb()})")
 
     # Standardize strategy parameter
     if strategy == "semantic":
@@ -158,7 +175,7 @@ def process_ingestion(
     else:
         active_strategy = "fixed_character"
 
-    # 1. Validation
+    # Validation
     is_valid, err_msg = validate_pdf(file_storage.stream, original_filename)
     if not is_valid:
         logger.warning(f"Validation failed for {original_filename}: {err_msg}")
@@ -196,9 +213,10 @@ def process_ingestion(
             db.session.commit()
             logger.info(f"Created PostgreSQL Document row ID={doc_record.id} for UUID '{doc_id}'")
 
-        # 2. Extracting stage
+        # Step 2: PDF extraction
+        t_step2 = time.time()
+        logger.info(f"[Ingestion Step 2/10] Extracting text from {unique_filename} (RAM: {get_ram_usage_mb()})")
         update_document_status(doc_record, "Extracting")
-        logger.info(f"Extracting text from {unique_filename}...")
         reader = PdfReader(raw_path)
         total_pages = len(reader.pages)
 
@@ -211,7 +229,9 @@ def process_ingestion(
         raw_char_count = 0
         clean_char_count = 0
 
-        # 3. Cleaning stage
+        # Step 3: Cleaning
+        t_step3 = time.time()
+        logger.info(f"[Ingestion Step 3/10] Cleaning extracted text (RAM: {get_ram_usage_mb()}) - Extracted in {t_step3 - t_step2:.2f}s")
         update_document_status(doc_record, "Cleaning")
         for idx, page in enumerate(reader.pages):
             raw_text = page.extract_text() or ""
@@ -236,14 +256,17 @@ def process_ingestion(
 
         save_raw_extracted_text(doc_id, raw_pages_data)
         save_cleaned_text(doc_id, cleaned_pages_data)
+        del raw_pages_data
+        gc.collect()
 
-        # 4. Chunking stage
+        # Step 4: Chunking
+        t_step4 = time.time()
+        logger.info(f"[Ingestion Step 4/10] Chunking text with strategy '{active_strategy}' (RAM: {get_ram_usage_mb()}) - Cleaned in {t_step4 - t_step3:.2f}s")
         update_document_status(doc_record, "Chunking")
         chunk_size = current_app.config.get("CHUNK_SIZE", 500)
         chunk_overlap = current_app.config.get("CHUNK_OVERLAP", 100)
         semantic_threshold = current_app.config.get("SEMANTIC_THRESHOLD", 0.6)
 
-        logger.info(f"Generating chunks for {doc_id} using strategy '{active_strategy}'...")
         document_chunks = []
         for page_data in cleaned_pages_data:
             page_chunks = chunk_page_text(
@@ -258,6 +281,8 @@ def process_ingestion(
             document_chunks.extend(page_chunks)
 
         save_document_chunks(doc_id, document_chunks, CHUNKS_DIR)
+        del cleaned_pages_data
+        gc.collect()
 
         # Bulk insert Chunk records into PostgreSQL if DATABASE_ENABLED is True
         if current_app.config.get("DATABASE_ENABLED", True) and doc_record:
@@ -278,11 +303,17 @@ def process_ingestion(
             db.session.add_all(chunk_objects)
             doc_record.chunk_count = len(document_chunks)
             db.session.commit()
-            logger.info(f"Bulk inserted {len(chunk_objects)} Chunk records into PostgreSQL for document {doc_id}")
+            del chunk_objects
+            gc.collect()
 
-        # 5. Embedding stage
+        # Step 5: Loading embedding model (lazy load)
+        t_step5 = time.time()
+        logger.info(f"[Ingestion Step 5/10] Loading embedding model (RAM: {get_ram_usage_mb()}) - Chunked in {t_step5 - t_step4:.2f}s")
         update_document_status(doc_record, "Embedding")
-        logger.info(f"Generating chunk embeddings for document {doc_id}...")
+
+        # Step 6 & Step 7: Generating & Saving embeddings
+        t_step6 = time.time()
+        logger.info(f"[Ingestion Step 6/10] Generating & Step 7 Saving chunk embeddings (RAM: {get_ram_usage_mb()})")
         try:
             from app.services.embedding_generator import generate_embeddings_for_document
             emb_res = generate_embeddings_for_document(doc_id)
@@ -297,8 +328,9 @@ def process_ingestion(
             logger.error(f"Failed to generate embeddings for document {doc_id}: {e}")
             raise RuntimeError(f"Embedding generation failed: {str(e)}") from e
 
-        # 6. FAISS Indexing stage
-        logger.info(f"Adding embeddings to FAISS index for document {doc_id}...")
+        # Step 8: Building FAISS
+        t_step8 = time.time()
+        logger.info(f"[Ingestion Step 8/10] Building FAISS vector index for doc {doc_id} (RAM: {get_ram_usage_mb()}) - Embeddings in {t_step8 - t_step6:.2f}s")
         try:
             from app.services.vector_index import get_vector_index_service
             index_service = get_vector_index_service()
@@ -307,7 +339,9 @@ def process_ingestion(
             logger.error(f"Failed to update FAISS index for document {doc_id}: {e}")
             raise RuntimeError(f"FAISS indexing failed: {str(e)}") from e
 
-        # 7. Final Completed Status
+        # Step 9: Database update
+        t_step9 = time.time()
+        logger.info(f"[Ingestion Step 9/10] Updating final database status (RAM: {get_ram_usage_mb()}) - FAISS indexed in {t_step9 - t_step8:.2f}s")
         update_document_status(doc_record, "Completed")
 
         # Save JSON backup metadata
@@ -317,7 +351,7 @@ def process_ingestion(
             "original_filename": original_filename,
             "file_size_bytes": file_size,
             "total_pages": total_pages,
-            "active_pages": len(cleaned_pages_data),
+            "active_pages": len(document_chunks),
             "raw_char_count": raw_char_count,
             "clean_char_count": clean_char_count,
             "total_chunks": len(document_chunks),
@@ -332,7 +366,13 @@ def process_ingestion(
             "embedding_dimension": embedding_dimension
         }
         save_metadata(doc_id, metadata)
-        logger.info(f"Successfully processed and ingested document {doc_id} ({original_filename}).")
+        
+        del document_chunks
+        gc.collect()
+
+        # Step 10: Ingestion finished
+        t_finish = time.time()
+        logger.info(f"[Ingestion Step 10/10] Successfully ingested document {doc_id} ({original_filename}) in {t_finish - t_start:.2f}s total (RAM: {get_ram_usage_mb()})")
 
         return {
             "success": True,
@@ -357,6 +397,8 @@ def process_ingestion(
                 os.remove(raw_path)
             except Exception:
                 pass
+
+        gc.collect()
 
         return {
             "success": False,

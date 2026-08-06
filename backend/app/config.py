@@ -28,9 +28,9 @@ class Config:
     # NVIDIA API (placeholder for RAG phase)
     NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
     
-    # RAG Models & Configurations
+    # RAG & Model Parameters (Low batch size for Render Free 512MB RAM optimization)
     EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
-    EMBEDDING_BATCH_SIZE = int(os.getenv("EMBEDDING_BATCH_SIZE", 32))
+    EMBEDDING_BATCH_SIZE = int(os.getenv("EMBEDDING_BATCH_SIZE", 4))
     DEFAULT_TOP_K = int(os.getenv("DEFAULT_TOP_K", 5))
     CROSS_ENCODER_MODEL = os.getenv("CROSS_ENCODER_MODEL", "ms-marco-MiniLM-L-6-v2")
     CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", 500))

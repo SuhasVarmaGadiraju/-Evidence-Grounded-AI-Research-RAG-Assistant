@@ -79,8 +79,8 @@ class EmbeddingService:
                     logger.info(f"Initializing SentenceTransformer model '{model_name}' (lazy load)...")
                     start_time = time.time()
                     try:
-                        # Load the model and save to the class-level cache variable
-                        EmbeddingService._model = SentenceTransformer(model_name)
+                        # Load the model explicitly on CPU to conserve RAM and avoid GPU overhead
+                        EmbeddingService._model = SentenceTransformer(model_name, device="cpu")
                         elapsed = time.time() - start_time
                         logger.info(f"Successfully loaded model '{model_name}' in {elapsed:.2f} seconds.")
                     except Exception as e:
