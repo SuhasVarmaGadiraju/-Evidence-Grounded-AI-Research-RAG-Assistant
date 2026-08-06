@@ -31,24 +31,27 @@ def create_app():
         logger.warning(f"Running without PostgreSQL. Database features are disabled.")
         app.config["DATABASE_ENABLED"] = False
     
-    # 4. Enable Cross-Origin Resource Sharing (CORS)
+    # 5. Enable Cross-Origin Resource Sharing (CORS)
     CORS(app, resources={r"/api/*": {"origins": "*"}})
     logger.info("CORS successfully configured for /api/*")
     
-    # 5. Register error handlers
+    # 6. Register error handlers
     register_error_handlers(app)
     logger.info("Global error handlers registered.")
     
-    # 6. Register routes / blueprints
+    # 7. Register routes / blueprints
     register_routes(app)
     logger.info("Blueprints and routes registered.")
     
-    # 7. Eager Startup Warm-up (Skip if running under unit tests)
-    if not app.config.get("TESTING", False):
+    # 8. Startup Warm-up (Skip if ENABLE_WARMUP evaluates to False or during testing)
+    if not app.config.get("TESTING", False) and app.config.get("ENABLE_WARMUP", False):
         try:
             warmup_status = warmup_services(app)
             app.config["WARMUP_STATUS"] = warmup_status
         except Exception as e:
             logger.warning(f"Startup warmup encountered warning: {e}")
+    else:
+        logger.info("Startup warmup skipped.")
+        app.config["WARMUP_STATUS"] = {"skipped": True}
 
     return app

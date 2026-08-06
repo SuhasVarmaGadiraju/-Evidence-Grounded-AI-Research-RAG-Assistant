@@ -52,6 +52,9 @@ class Config:
     # Caching & Optimization Configuration
     CACHE_ENABLED = os.getenv("CACHE_ENABLED", "True").lower() in ("true", "1", "yes")
 
+    # Startup Warmup Setting
+    ENABLE_WARMUP = os.getenv("ENABLE_WARMUP", "True").lower() in ("true", "1", "yes")
+
     # Conversation Management Configuration
     MAX_CONVERSATION_TURNS = int(os.getenv("MAX_CONVERSATION_TURNS", 10))
 
@@ -79,23 +82,21 @@ class Config:
     LLM_TOP_P = float(os.getenv("LLM_TOP_P", 0.7))
 
 
-
-
-
-
 class DevelopmentConfig(Config):
     """Development environment specific configuration."""
     DEBUG = True
+    ENABLE_WARMUP = os.getenv("ENABLE_WARMUP", "True").lower() in ("true", "1", "yes")
 
 class ProductionConfig(Config):
     """Production environment specific configuration."""
     DEBUG = False
-    # In production, require standard config checks if appropriate
+    ENABLE_WARMUP = os.getenv("ENABLE_WARMUP", "False").lower() in ("true", "1", "yes")
 
 class TestingConfig(Config):
     """Testing environment configuration."""
     TESTING = True
     DEBUG = True
+    ENABLE_WARMUP = False
 
 # Dictionary to map environment name to config object
 config_by_name = {
