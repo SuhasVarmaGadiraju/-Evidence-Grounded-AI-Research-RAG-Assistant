@@ -83,13 +83,13 @@ def save_cleaned_text(doc_id: str, pages_data: List[Dict[str, Any]]) -> None:
 
 def update_document_status(doc_record: Optional[Document], status: str) -> None:
     """
-    Updates the document status in PostgreSQL transactionally.
+    Updates the document status in PostgreSQL transactionally if database is enabled.
 
     Args:
         doc_record (Optional[Document]): Document ORM instance.
         status (str): New status string from VALID_DOCUMENT_STATUSES.
     """
-    if doc_record and status in VALID_DOCUMENT_STATUSES:
+    if current_app.config.get("DATABASE_ENABLED", True) and doc_record and status in VALID_DOCUMENT_STATUSES:
         try:
             doc_record.status = status
             db.session.commit()
@@ -100,7 +100,7 @@ def update_document_status(doc_record: Optional[Document], status: str) -> None:
 
 def resolve_user_id(user_info: Optional[Dict[str, Any]]) -> Optional[int]:
     """
-    Resolves PostgreSQL user integer ID from user_info payload.
+    Resolves PostgreSQL user integer ID from user_info payload if database is enabled.
 
     Args:
         user_info (Optional[Dict[str, Any]]): Dictionary containing firebase_uid or email.
@@ -108,7 +108,7 @@ def resolve_user_id(user_info: Optional[Dict[str, Any]]) -> Optional[int]:
     Returns:
         Optional[int]: User primary key ID if found, else None.
     """
-    if not user_info:
+    if not user_info or not current_app.config.get("DATABASE_ENABLED", True):
         return None
     firebase_uid = user_info.get("firebase_uid") or user_info.get("uid") or user_info.get("id")
     email = user_info.get("email")
@@ -131,14 +131,14 @@ def process_ingestion(
     """
     Process a single PDF upload:
     1. Validate
-    2. Save raw file with unique UUID prefix & Create PostgreSQL Document record (Queued/Uploading)
-    3. Extract text page-by-page (Extracting)
-    4. Clean text page-by-page (Cleaning)
-    5. Generate chunks & bulk insert into PostgreSQL (Chunking)
-    6. Generate embeddings (Embedding)
-    7. Add to FAISS index & sync vector IDs (Indexed)
+    2. Save raw file with unique UUID prefix & Create PostgreSQL Document record (if database enabled)
+    3. Extract text page-by-page
+    4. Clean text page-by-page
+    5. Generate chunks & bulk insert into PostgreSQL (if database enabled)
+    6. Generate embeddings
+    7. Add to FAISS index & sync vector IDs
     8. Mark Completed & save JSON backup
-    9. On failure, mark status as Failed, rollback DB transaction, and log error.
+    9. On failure, handle cleanup and return error dictionary.
 
     Returns:
         Dict[str, Any]: Ingestion result payload with success flag and metadata.
@@ -176,32 +176,35 @@ def process_ingestion(
         # Resolve user ID if authenticated
         uploaded_by_id = resolve_user_id(user_info)
 
-        # Create Document row in PostgreSQL (Queued -> Uploading)
+        # Create Document row in PostgreSQL if DATABASE_ENABLED is True
         now_utc = datetime.now(timezone.utc)
-        doc_record = Document(
-            document_uuid=doc_id,
-            title=original_filename,
-            filename=unique_filename,
-            filepath=raw_path,
-            pages=0,
-            file_size=file_size,
-            uploaded_by=uploaded_by_id,
-            status="Uploading",
-            chunk_count=0,
-            embedding_count=0,
-            created_at=now_utc
-        )
-        db.session.add(doc_record)
-        db.session.commit()
-        logger.info(f"Created PostgreSQL Document row ID={doc_record.id} for UUID '{doc_id}'")
+        if current_app.config.get("DATABASE_ENABLED", True):
+            doc_record = Document(
+                document_uuid=doc_id,
+                title=original_filename,
+                filename=unique_filename,
+                filepath=raw_path,
+                pages=0,
+                file_size=file_size,
+                uploaded_by=uploaded_by_id,
+                status="Uploading",
+                chunk_count=0,
+                embedding_count=0,
+                created_at=now_utc
+            )
+            db.session.add(doc_record)
+            db.session.commit()
+            logger.info(f"Created PostgreSQL Document row ID={doc_record.id} for UUID '{doc_id}'")
 
         # 2. Extracting stage
         update_document_status(doc_record, "Extracting")
         logger.info(f"Extracting text from {unique_filename}...")
         reader = PdfReader(raw_path)
         total_pages = len(reader.pages)
-        doc_record.pages = total_pages
-        db.session.commit()
+
+        if current_app.config.get("DATABASE_ENABLED", True) and doc_record:
+            doc_record.pages = total_pages
+            db.session.commit()
 
         raw_pages_data = []
         cleaned_pages_data = []
@@ -256,25 +259,26 @@ def process_ingestion(
 
         save_document_chunks(doc_id, document_chunks, CHUNKS_DIR)
 
-        # Bulk insert Chunk records into PostgreSQL
-        chunk_objects = []
-        for chunk_idx, c_item in enumerate(document_chunks):
-            c_uuid = c_item.get("chunk_id") or str(uuid.uuid4())
-            c_obj = Chunk(
-                chunk_uuid=c_uuid,
-                document_id=doc_record.id,
-                page_number=c_item.get("page_number", 1),
-                chunk_index=chunk_idx,
-                text=c_item.get("text", ""),
-                faiss_vector_id=None,
-                created_at=now_utc
-            )
-            chunk_objects.append(c_obj)
+        # Bulk insert Chunk records into PostgreSQL if DATABASE_ENABLED is True
+        if current_app.config.get("DATABASE_ENABLED", True) and doc_record:
+            chunk_objects = []
+            for chunk_idx, c_item in enumerate(document_chunks):
+                c_uuid = c_item.get("chunk_id") or str(uuid.uuid4())
+                c_obj = Chunk(
+                    chunk_uuid=c_uuid,
+                    document_id=doc_record.id,
+                    page_number=c_item.get("page_number", 1),
+                    chunk_index=chunk_idx,
+                    text=c_item.get("text", ""),
+                    faiss_vector_id=None,
+                    created_at=now_utc
+                )
+                chunk_objects.append(c_obj)
 
-        db.session.add_all(chunk_objects)
-        doc_record.chunk_count = len(document_chunks)
-        db.session.commit()
-        logger.info(f"Bulk inserted {len(chunk_objects)} Chunk records into PostgreSQL for document {doc_id}")
+            db.session.add_all(chunk_objects)
+            doc_record.chunk_count = len(document_chunks)
+            db.session.commit()
+            logger.info(f"Bulk inserted {len(chunk_objects)} Chunk records into PostgreSQL for document {doc_id}")
 
         # 5. Embedding stage
         update_document_status(doc_record, "Embedding")
@@ -285,8 +289,10 @@ def process_ingestion(
             embedding_status = "completed"
             embedding_model = emb_res["embedding_model"]
             embedding_dimension = emb_res["embedding_dimension"]
-            doc_record.embedding_count = len(document_chunks)
-            db.session.commit()
+
+            if current_app.config.get("DATABASE_ENABLED", True) and doc_record:
+                doc_record.embedding_count = len(document_chunks)
+                db.session.commit()
         except Exception as e:
             logger.error(f"Failed to generate embeddings for document {doc_id}: {e}")
             raise RuntimeError(f"Embedding generation failed: {str(e)}") from e
@@ -326,7 +332,7 @@ def process_ingestion(
             "embedding_dimension": embedding_dimension
         }
         save_metadata(doc_id, metadata)
-        logger.info(f"Successfully processed and ingested document {doc_id} ({original_filename}) into PostgreSQL & FAISS.")
+        logger.info(f"Successfully processed and ingested document {doc_id} ({original_filename}).")
 
         return {
             "success": True,
@@ -336,15 +342,13 @@ def process_ingestion(
 
     except Exception as e:
         logger.exception(f"Error occurred while processing {original_filename}: {e}")
-        db.session.rollback()
-
-        # Update status to Failed if document row exists
-        if doc_record:
+        if current_app.config.get("DATABASE_ENABLED", True):
             try:
-                doc_record.status = "Failed"
-                db.session.commit()
-            except Exception as status_err:
                 db.session.rollback()
+                if doc_record:
+                    doc_record.status = "Failed"
+                    db.session.commit()
+            except Exception as status_err:
                 logger.error(f"Failed to set status='Failed' for doc {doc_id}: {status_err}")
 
         # Clean up raw file on disk if created
@@ -363,36 +367,37 @@ def process_ingestion(
 def list_ingested_documents() -> List[Dict[str, Any]]:
     """
     Retrieves all successfully processed documents from PostgreSQL.
-    Falls back to scanning file metadata if database query fails.
+    Falls back to scanning file metadata if database query fails or is disabled.
 
     Returns:
         List[Dict[str, Any]]: List of document metadata dictionaries.
     """
     documents = []
-    try:
-        db_docs = Document.query.filter(
-            Document.status.in_(["Completed", "processed", "Indexed"])
-        ).order_by(Document.created_at.desc()).all()
+    if current_app.config.get("DATABASE_ENABLED", True):
+        try:
+            db_docs = Document.query.filter(
+                Document.status.in_(["Completed", "processed", "Indexed"])
+            ).order_by(Document.created_at.desc()).all()
 
-        for doc in db_docs:
-            documents.append({
-                "document_id": doc.document_uuid,
-                "id": doc.id,
-                "filename": doc.filename,
-                "original_filename": doc.title,
-                "file_size_bytes": doc.file_size,
-                "total_pages": doc.pages,
-                "total_chunks": doc.chunk_count,
-                "embedding_count": doc.embedding_count,
-                "status": "processed",
-                "upload_timestamp": doc.created_at.isoformat().replace("+00:00", "Z") if doc.created_at else "",
-                "uploaded_by": doc.uploaded_by
-            })
-        return documents
-    except Exception as e:
-        logger.error(f"Error querying documents from PostgreSQL database: {e}. Falling back to file metadata.")
+            for doc in db_docs:
+                documents.append({
+                    "document_id": doc.document_uuid,
+                    "id": doc.id,
+                    "filename": doc.filename,
+                    "original_filename": doc.title,
+                    "file_size_bytes": doc.file_size,
+                    "total_pages": doc.pages,
+                    "total_chunks": doc.chunk_count,
+                    "embedding_count": doc.embedding_count,
+                    "status": "processed",
+                    "upload_timestamp": doc.created_at.isoformat().replace("+00:00", "Z") if doc.created_at else "",
+                    "uploaded_by": doc.uploaded_by
+                })
+            return documents
+        except Exception as e:
+            logger.error(f"Error querying documents from PostgreSQL database: {e}. Falling back to file metadata.")
 
-    # Fallback to scanning metadata folder if database is unavailable
+    # Fallback to scanning metadata folder if database is unavailable or disabled
     if not os.path.exists(METADATA_DIR):
         return documents
 
