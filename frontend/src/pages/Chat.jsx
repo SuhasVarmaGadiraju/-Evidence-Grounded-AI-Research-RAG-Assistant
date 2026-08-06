@@ -171,7 +171,8 @@ export default function Chat() {
   const handleExportSession = (format) => {
     if (!sessionId) return;
     setExportDropdownOpen(false);
-    const exportUrl = `/api/sessions/${sessionId}/export?format=${format}`;
+    const apiBase = import.meta.env.VITE_API_URL || '/api';
+    const exportUrl = `${apiBase}/sessions/${sessionId}/export?format=${format}`;
     window.open(exportUrl, '_blank');
   };
 

@@ -1,8 +1,11 @@
 import axios from 'axios';
 
-// Create standard Axios client configured for proxy prefix
+// Base API URL loaded from environment variable or fallback to deployed Render backend
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://evidence-ai-backend.onrender.com/api';
+
+// Create standard Axios client configured with VITE_API_URL
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
