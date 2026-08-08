@@ -110,10 +110,12 @@ export default function CustomSelect({
                 onMouseEnter={() => setHighlightedIndex(idx)}
                 className={`px-3 py-2 text-xs font-medium cursor-pointer flex items-center justify-between transition-colors ${
                   isSelected
-                    ? 'bg-zinc-100 dark:bg-zinc-800/80 text-main font-semibold'
+                    ? isHighlighted
+                      ? 'bg-zinc-200/80 dark:bg-zinc-800 text-main font-semibold'
+                      : 'bg-zinc-100 dark:bg-zinc-800/80 text-main font-semibold'
                     : isHighlighted
                     ? 'bg-muted text-main'
-                    : 'text-sub hover:text-main hover:bg-muted/70'
+                    : 'text-main/90 hover:text-main hover:bg-muted/70'
                 }`}
               >
                 <div className="flex flex-col">
