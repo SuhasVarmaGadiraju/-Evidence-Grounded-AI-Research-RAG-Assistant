@@ -63,9 +63,9 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-[#FAFAF8] dark:bg-[#111315] text-[#111827] dark:text-[#F9FAFB] transition-colors duration-200 selection:bg-emerald-500/20">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-app text-main transition-colors duration-200 selection:bg-emerald-500/20">
       {/* Left Section (Branding) ~45% width */}
-      <div className="w-full lg:w-[45%] p-8 lg:p-12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-[#E5E7EB] dark:border-[#2A2C31] bg-[#FAFAF8] dark:bg-[#111315] relative">
+      <div className="w-full lg:w-[45%] p-8 lg:p-12 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-theme bg-app relative">
         
         {/* Top Header Logo */}
         <div>
@@ -74,14 +74,14 @@ export default function Login() {
             className="inline-flex items-center gap-3 group cursor-pointer"
             title="Go to Dashboard"
           >
-            <div className="w-9 h-9 rounded-xl bg-[#111827] dark:bg-[#F9FAFB] flex items-center justify-center text-white dark:text-[#111827] font-bold shadow-xs transition-transform group-hover:scale-105">
+            <div className="w-9 h-9 rounded-xl bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-900 font-bold shadow-xs transition-transform group-hover:scale-105">
               <BrainCircuit className="w-5 h-5" />
             </div>
             <div>
-              <span className="font-bold text-lg tracking-tight block text-[#111827] dark:text-[#F9FAFB] group-hover:opacity-80 transition-opacity">
+              <span className="font-bold text-lg tracking-tight block text-main group-hover:opacity-80 transition-opacity">
                 Evidence AI
               </span>
-              <span className="block text-xs text-[#6B7280] dark:text-zinc-400 font-medium leading-tight">
+              <span className="block text-xs text-sub font-medium leading-tight">
                 Research Platform
               </span>
             </div>
@@ -97,52 +97,52 @@ export default function Login() {
           </div>
 
           {/* Main Heading */}
-          <h1 className="text-3xl lg:text-[40px] font-extrabold tracking-tight text-[#111827] dark:text-[#F9FAFB] leading-[1.15]">
+          <h1 className="text-3xl lg:text-[40px] font-extrabold tracking-tight text-main leading-[1.15]">
             AI-Powered Research.<br />
             Grounded in Evidence.
           </h1>
 
           {/* Short Description */}
-          <p className="text-[15px] text-[#6B7280] dark:text-zinc-400 leading-relaxed font-normal">
+          <p className="text-[15px] text-sub leading-relaxed font-normal">
             Empowering enterprise researchers and scientists with verifiable, citation-backed AI intelligence.
           </p>
 
           {/* Three Premium Feature Cards */}
           <div className="space-y-3.5 pt-1">
             {/* Card 1: Hybrid Search */}
-            <div className="p-4 rounded-xl border border-[#E5E7EB] dark:border-[#2A2C31] bg-white dark:bg-[#1A1B1F] shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 flex items-start gap-4">
+            <div className="p-4 rounded-xl border border-theme bg-card shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 flex items-start gap-4">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0 text-emerald-600 dark:text-emerald-400">
                 <Layers className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-[15px] font-bold text-[#111827] dark:text-[#F9FAFB]">Hybrid Search</h3>
-                <p className="text-xs text-[#6B7280] dark:text-zinc-400 mt-0.5">
+                <h3 className="text-[15px] font-bold text-main">Hybrid Search</h3>
+                <p className="text-xs text-sub mt-0.5">
                   Dense FAISS + BM25 Fusion for comprehensive results.
                 </p>
               </div>
             </div>
 
             {/* Card 2: Cross-Encoder Reranking */}
-            <div className="p-4 rounded-xl border border-[#E5E7EB] dark:border-[#2A2C31] bg-white dark:bg-[#1A1B1F] shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 flex items-start gap-4">
+            <div className="p-4 rounded-xl border border-theme bg-card shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 flex items-start gap-4">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0 text-emerald-600 dark:text-emerald-400">
                 <Target className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-[15px] font-bold text-[#111827] dark:text-[#F9FAFB]">Cross-Encoder Reranking</h3>
-                <p className="text-xs text-[#6B7280] dark:text-zinc-400 mt-0.5">
+                <h3 className="text-[15px] font-bold text-main">Cross-Encoder Reranking</h3>
+                <p className="text-xs text-sub mt-0.5">
                   Precise evidence ranking for high-precision retrieval.
                 </p>
               </div>
             </div>
 
             {/* Card 3: RAGAS Evaluation */}
-            <div className="p-4 rounded-xl border border-[#E5E7EB] dark:border-[#2A2C31] bg-white dark:bg-[#1A1B1F] shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 flex items-start gap-4">
+            <div className="p-4 rounded-xl border border-theme bg-card shadow-xs hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 flex items-start gap-4">
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center shrink-0 text-emerald-600 dark:text-emerald-400">
                 <BarChart3 className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-[15px] font-bold text-[#111827] dark:text-[#F9FAFB]">RAGAS Evaluation</h3>
-                <p className="text-xs text-[#6B7280] dark:text-zinc-400 mt-0.5">
+                <h3 className="text-[15px] font-bold text-main">RAGAS Evaluation</h3>
+                <p className="text-xs text-sub mt-0.5">
                   Automatic quality benchmarking for context precision & faithfulness.
                 </p>
               </div>
@@ -151,24 +151,24 @@ export default function Login() {
         </div>
 
         {/* Bottom Footer */}
-        <div className="pt-6 border-t border-[#E5E7EB] dark:border-[#2A2C31] text-xs text-[#6B7280] dark:text-zinc-400 flex items-center gap-2 font-medium">
+        <div className="pt-6 border-t border-theme text-xs text-sub flex items-center gap-2 font-medium">
           <LockKeyhole className="w-4 h-4 text-[#10B981] shrink-0" />
           <span>Enterprise-grade Security • AES-256 Encryption • Private Research Workspace</span>
         </div>
       </div>
 
       {/* Right Section (Authentication) ~55% width */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-[#FAFAF8] dark:bg-[#111315]">
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-6 sm:p-12 lg:p-16 bg-app">
         
         {/* Centered Authentication Card */}
-        <div className="w-full max-w-[460px] bg-white dark:bg-[#1A1B1F] border border-[#E5E7EB] dark:border-[#2A2C31] rounded-2xl p-7 sm:p-9 shadow-sm sm:shadow-md space-y-6">
+        <div className="w-full max-w-[460px] bg-card border border-theme rounded-2xl p-7 sm:p-9 shadow-sm sm:shadow-md space-y-6">
           
           {/* Welcome Header */}
           <div>
-            <h2 className="text-2xl sm:text-[28px] font-bold tracking-tight text-[#111827] dark:text-[#F9FAFB]">
+            <h2 className="text-2xl sm:text-[28px] font-bold tracking-tight text-main">
               Welcome Back
             </h2>
-            <p className="text-sm text-[#6B7280] dark:text-zinc-400 mt-1">
+            <p className="text-sm text-sub mt-1">
               Sign in to access your research workspace.
             </p>
           </div>
@@ -179,7 +179,7 @@ export default function Login() {
               type="button"
               onClick={handleGoogleClick}
               disabled={loading}
-              className="w-full h-11 px-4 rounded-xl border border-[#E5E7EB] dark:border-[#2A2C31] bg-white dark:bg-[#111315] text-[#111827] dark:text-[#F9FAFB] font-medium text-sm shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 hover:bg-zinc-50 dark:hover:bg-zinc-800/40 transition-all flex items-center justify-center gap-3 cursor-pointer"
+              className="w-full h-11 px-4 rounded-xl border border-theme bg-input text-main font-medium text-sm shadow-xs hover:border-theme-hover transition-all flex items-center justify-center gap-3 cursor-pointer"
             >
               <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -194,9 +194,9 @@ export default function Login() {
           {/* OR Divider */}
           <div className="relative flex items-center justify-center my-4">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-[#E5E7EB] dark:border-[#2A2C31]" />
+              <div className="w-full border-t border-theme" />
             </div>
-            <div className="relative px-3 text-xs font-semibold uppercase tracking-wider text-[#6B7280] dark:text-zinc-400 bg-white dark:bg-[#1A1B1F]">
+            <div className="relative px-3 text-xs font-semibold uppercase tracking-wider text-muted-custom bg-card">
               OR
             </div>
           </div>
@@ -213,11 +213,11 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email Field */}
             <div>
-              <label className="block text-[13px] font-semibold text-[#111827] dark:text-[#F9FAFB] mb-1.5">
+              <label className="block text-[13px] font-semibold text-main mb-1.5">
                 Email address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-custom">
                   <Mail className="w-4 h-4" />
                 </div>
                 <input
@@ -226,7 +226,7 @@ export default function Login() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-[#E5E7EB] dark:border-[#2A2C31] bg-white dark:bg-[#111315] text-[#111827] dark:text-[#F9FAFB] text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]/20 focus:border-[#10B981] transition-all"
+                  className="w-full h-11 pl-10 pr-4 rounded-xl border border-theme bg-input text-main text-sm placeholder:text-muted-custom focus:outline-none focus:ring-2 focus:ring-[#10B981]/20 focus:border-[#10B981] transition-all"
                 />
               </div>
             </div>
@@ -234,7 +234,7 @@ export default function Login() {
             {/* Password Field */}
             <div>
               <div className="flex justify-between items-center mb-1.5">
-                <label className="block text-[13px] font-semibold text-[#111827] dark:text-[#F9FAFB]">
+                <label className="block text-[13px] font-semibold text-main">
                   Password
                 </label>
                 <Link
@@ -245,7 +245,7 @@ export default function Login() {
                 </Link>
               </div>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6B7280]">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-custom">
                   <Lock className="w-4 h-4" />
                 </div>
                 <input
@@ -254,12 +254,12 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full h-11 pl-10 pr-10 rounded-xl border border-[#E5E7EB] dark:border-[#2A2C31] bg-white dark:bg-[#111315] text-[#111827] dark:text-[#F9FAFB] text-sm placeholder:text-zinc-400 dark:placeholder:text-zinc-500 focus:outline-none focus:ring-2 focus:ring-[#10B981]/20 focus:border-[#10B981] transition-all"
+                  className="w-full h-11 pl-10 pr-10 rounded-xl border border-theme bg-input text-main text-sm placeholder:text-muted-custom focus:outline-none focus:ring-2 focus:ring-[#10B981]/20 focus:border-[#10B981] transition-all"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#6B7280] hover:text-[#111827] dark:hover:text-[#F9FAFB] transition-colors cursor-pointer"
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-muted-custom hover:text-main transition-colors cursor-pointer"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>

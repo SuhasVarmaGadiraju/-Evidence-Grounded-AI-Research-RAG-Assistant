@@ -25,7 +25,7 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center p-6 ${isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-faf9f6 text-zinc-900'}`}>
+    <div className="min-h-screen flex items-center justify-center p-6 bg-app text-main">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <Link to={isAuthenticated ? "/dashboard" : "/"} className="inline-flex items-center gap-2 mb-4 group cursor-pointer" title="Go to Dashboard">
@@ -35,19 +35,19 @@ export default function ForgotPassword() {
             <span className="font-bold text-base tracking-tight text-main">Evidence AI</span>
           </Link>
           <h1 className="text-xl font-bold tracking-tight text-main">Reset your Password</h1>
-          <p className={`mt-1 text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+          <p className="mt-1 text-xs text-sub">
             Enter your academic or organization email address to receive reset instructions.
           </p>
         </div>
 
-        <div className={`p-6 rounded-xl border ${isDark ? 'bg-zinc-900 border-zinc-800' : 'bg-white border-zinc-200'}`}>
+        <div className="p-6 rounded-xl border border-theme bg-card">
           {submitted ? (
             <div className="text-center py-2 space-y-3">
               <div className="w-10 h-10 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center justify-center mx-auto">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <h2 className="text-sm font-bold text-main">Check your inbox</h2>
-              <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
+              <p className="text-xs text-sub">
                 We have sent password reset instructions to <span className="font-mono font-semibold text-main">{email}</span>.
               </p>
               <Link
@@ -74,11 +74,7 @@ export default function ForgotPassword() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="researcher@lab.org"
-                    className={`w-full pl-9 pr-4 py-2.5 rounded-lg border text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all ${
-                      isDark
-                        ? 'bg-zinc-950 border-zinc-800 text-white placeholder-zinc-500'
-                        : 'bg-white border-zinc-200 text-zinc-900 placeholder-zinc-400'
-                    }`}
+                    className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-theme bg-input text-main placeholder:text-muted-custom text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all"
                   />
                 </div>
               </div>

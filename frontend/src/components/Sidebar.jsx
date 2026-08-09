@@ -56,7 +56,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen, collapsed, setColla
   ];
 
   const content = (
-    <div className="flex flex-col h-full bg-surface text-main transition-colors duration-200">
+    <div className="flex flex-col h-full bg-sidebar text-main transition-colors duration-200">
       {/* Brand Header */}
       <div className="h-16 px-4 flex items-center justify-between border-b border-theme">
         <Link
@@ -152,7 +152,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen, collapsed, setColla
   return (
     <>
       {/* Desktop Persistent / Collapsible Fixed Sidebar */}
-      <aside className={`hidden lg:flex flex-col h-full ${collapsed ? 'w-16' : 'w-64'} border-r border-theme bg-surface transition-all duration-300 shrink-0 z-20`}>
+      <aside className={`hidden lg:flex flex-col h-full ${collapsed ? 'w-16' : 'w-64'} border-r border-theme bg-sidebar transition-all duration-300 shrink-0 z-20`}>
         {content}
       </aside>
 
@@ -163,7 +163,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen, collapsed, setColla
             className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           ></div>
-          <div className="relative w-64 h-full bg-surface border-r border-theme shadow-2xl flex-1 z-50">
+          <div className="relative w-64 h-full bg-sidebar border-r border-theme shadow-2xl flex-1 z-50">
             {content}
           </div>
         </div>

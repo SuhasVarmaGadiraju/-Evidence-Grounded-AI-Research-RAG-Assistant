@@ -5,7 +5,7 @@ import Sidebar from './Sidebar';
 
 export default function Layout() {
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-50">
+    <div className="flex flex-col h-screen overflow-hidden bg-app text-main">
       <Navbar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

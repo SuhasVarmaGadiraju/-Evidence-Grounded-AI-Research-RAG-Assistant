@@ -9,7 +9,7 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#FAFAF8] dark:bg-[#111315] text-[#111827] dark:text-[#F9FAFB] transition-colors duration-200">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-app text-main transition-colors duration-200">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 text-emerald-500 animate-spin" />
           <p className="text-sm font-semibold text-[#6B7280] dark:text-zinc-400 font-mono">Checking session...</p>

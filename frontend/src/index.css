@@ -20,12 +20,13 @@
 
 /* CSS Theme Custom Variables for Dynamic Light / Dark Mode System */
 :root {
-  --bg-app: #faf9f6;
+  --bg-app: #f4f4f5;
   --bg-surface: #ffffff;
   --bg-card: #ffffff;
-  --bg-card-hover: #f4f4f5;
-  --bg-muted: #f4f4f5;
+  --bg-card-hover: #f0f0f3;
+  --bg-muted: #eef0f3;
   --bg-input: #ffffff;
+  --bg-sidebar: #f0f1f4;
   --border-color: #e4e4e7;
   --border-color-hover: #d4d4d8;
   --text-primary: #18181b;
@@ -42,6 +43,7 @@ html.dark, body.dark {
   --bg-card-hover: #27272a;
   --bg-muted: #27272a;
   --bg-input: #121316;
+  --bg-sidebar: #121316;
   --border-color: #27272a;
   --border-color-hover: #3f3f46;
   --text-primary: #fafafa;
@@ -77,6 +79,7 @@ input:-webkit-autofill:active {
 .bg-card-hover { background-color: var(--bg-card-hover); }
 .bg-muted { background-color: var(--bg-muted); }
 .bg-input { background-color: var(--bg-input); }
+.bg-sidebar { background-color: var(--bg-sidebar); }
 
 .border-theme { border-color: var(--border-color); }
 .border-theme-hover:hover { border-color: var(--border-color-hover); }

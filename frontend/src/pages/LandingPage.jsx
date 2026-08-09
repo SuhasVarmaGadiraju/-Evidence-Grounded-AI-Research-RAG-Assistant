@@ -152,9 +152,9 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className={`min-h-screen ${isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-faf9f6 text-zinc-900'}`}>
+    <div className="min-h-screen bg-app text-main">
       {/* 1. Public Top Navigation */}
-      <header className={`sticky top-0 z-50 backdrop-blur-md border-b ${isDark ? 'bg-zinc-950/90 border-zinc-800' : 'bg-white/90 border-zinc-200'}`}>
+      <header className="sticky top-0 z-50 backdrop-blur-md border-b border-theme bg-surface/90">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link to={isAuthenticated ? "/dashboard" : "/"} className="flex items-center gap-3 group cursor-pointer" title="Evidence AI">
             <div className="w-8 h-8 rounded-lg bg-zinc-900 dark:bg-zinc-100 flex items-center justify-center text-white dark:text-zinc-900 font-bold shadow-xs">
