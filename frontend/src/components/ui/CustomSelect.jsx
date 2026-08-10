@@ -7,8 +7,9 @@ export default function CustomSelect({
   options = [],
   placeholder = 'Select option...',
   className = '',
+  buttonClassName = '',
   disabled = false,
-  size = 'md', // 'sm' | 'md'
+  size = 'md', // 'sm' | 'md' | 'compact'
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
@@ -84,22 +85,26 @@ export default function CustomSelect({
         disabled={disabled}
         onClick={() => !disabled && setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
-        className={`w-full flex items-center justify-between gap-2.5 rounded-lg border border-theme bg-input text-main transition-all select-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 ${
-          size === 'sm' ? 'px-2.5 py-1.5 text-xs' : 'px-3 py-2 text-xs sm:text-sm'
-        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-theme-hover'}`}
+        className={`w-full flex items-center justify-between gap-2 rounded-lg border border-theme bg-input text-main transition-all select-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 ${
+          size === 'sm'
+            ? 'px-2.5 py-1 text-xs h-8'
+            : size === 'compact'
+            ? 'px-3 py-2 text-xs sm:text-sm h-10'
+            : 'px-3 py-2 text-xs sm:text-sm min-h-[38px]'
+        } ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-theme-hover'} ${buttonClassName}`}
       >
         <span className="truncate font-medium">
           {selectedOption ? selectedOption.label : placeholder}
         </span>
         <ChevronDown
-          className={`w-3.5 h-3.5 text-muted-custom transition-transform duration-200 shrink-0 ${
+          className={`w-4 h-4 text-muted-custom transition-transform duration-200 shrink-0 ${
             isOpen ? 'rotate-180' : ''
           }`}
         />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 left-0 mt-1.5 z-50 min-w-[140px] rounded-xl border border-theme bg-surface shadow-xl py-1.5 animate-fade-in overflow-hidden max-h-60 overflow-y-auto">
+        <div className="absolute right-0 left-0 mt-1.5 z-50 min-w-[140px] rounded-xl border border-theme bg-surface shadow-xl py-1 animate-fade-in overflow-hidden max-h-60 overflow-y-auto">
           {normalizedOptions.map((opt, idx) => {
             const isSelected = String(opt.value) === String(value);
             const isHighlighted = idx === highlightedIndex;
@@ -108,7 +113,7 @@ export default function CustomSelect({
                 key={opt.value}
                 onClick={() => handleSelect(opt.value)}
                 onMouseEnter={() => setHighlightedIndex(idx)}
-                className={`px-3 py-2 text-xs font-medium cursor-pointer flex items-center justify-between transition-colors ${
+                className={`px-3 py-2 text-xs sm:text-sm font-medium cursor-pointer flex items-center justify-between transition-colors ${
                   isSelected
                     ? isHighlighted
                       ? 'bg-zinc-200/80 dark:bg-zinc-800 text-main font-semibold'
@@ -124,7 +129,7 @@ export default function CustomSelect({
                     <span className="text-[10px] text-muted-custom font-normal font-mono">{opt.description}</span>
                   )}
                 </div>
-                {isSelected && <Check className="w-3.5 h-3.5 text-indigo-500 shrink-0 ml-2" />}
+                {isSelected && <Check className="w-4 h-4 text-indigo-500 shrink-0 ml-2" />}
               </div>
             );
           })}

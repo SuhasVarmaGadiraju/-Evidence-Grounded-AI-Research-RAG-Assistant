@@ -66,27 +66,39 @@ export default function Settings() {
             <Cpu className="w-3.5 h-3.5 text-muted-custom" />
             Vector & Reranker Models
           </h3>
-          <div className="space-y-3.5">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-sub">SentenceTransformer Embedding Model</label>
-              <CustomSelect
-                value={embeddingModel}
-                onChange={(e) => setEmbeddingModel(e.target.value)}
-                options={[
-                  { value: 'all-MiniLM-L6-v2', label: 'all-MiniLM-L6-v2 (384-dim, Fast)' },
-                ]}
-              />
+          <div className="space-y-4 pt-1">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+              <label className="text-xs sm:text-sm font-medium text-sub shrink-0 sm:w-1/2">
+                SentenceTransformer Embedding Model
+              </label>
+              <div className="w-full sm:w-1/2 sm:max-w-md">
+                <CustomSelect
+                  value={embeddingModel}
+                  onChange={(e) => setEmbeddingModel(e.target.value)}
+                  size="compact"
+                  className="w-full"
+                  options={[
+                    { value: 'all-MiniLM-L6-v2', label: 'all-MiniLM-L6-v2 (384-dim, Fast)' },
+                  ]}
+                />
+              </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-sub">Cross-Encoder Reranker Model</label>
-              <CustomSelect
-                value={crossEncoder}
-                onChange={(e) => setCrossEncoder(e.target.value)}
-                options={[
-                  { value: 'ms-marco-MiniLM-L-6-v2', label: 'cross-encoder/ms-marco-MiniLM-L-6-v2' },
-                ]}
-              />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+              <label className="text-xs sm:text-sm font-medium text-sub shrink-0 sm:w-1/2">
+                Cross-Encoder Reranker Model
+              </label>
+              <div className="w-full sm:w-1/2 sm:max-w-md">
+                <CustomSelect
+                  value={crossEncoder}
+                  onChange={(e) => setCrossEncoder(e.target.value)}
+                  size="compact"
+                  className="w-full"
+                  options={[
+                    { value: 'ms-marco-MiniLM-L-6-v2', label: 'cross-encoder/ms-marco-MiniLM-L-6-v2' },
+                  ]}
+                />
+              </div>
             </div>
           </div>
         </div>
