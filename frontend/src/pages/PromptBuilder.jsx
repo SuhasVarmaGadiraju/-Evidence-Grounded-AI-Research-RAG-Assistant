@@ -4,10 +4,13 @@ import {
   AlertCircle,
   Copy,
   Check,
-  Sparkles
+  Sparkles,
+  FileCode2,
+  Hash
 } from 'lucide-react';
 import api from '../services/api';
 import CustomSelect from '../components/ui/CustomSelect';
+import { PROMPT_TEMPLATE_OPTIONS } from '../constants/promptTemplates';
 
 export default function PromptBuilder() {
   const [query, setQuery] = useState('');
@@ -86,6 +89,8 @@ export default function PromptBuilder() {
               <CustomSelect
                 value={topK}
                 onChange={(e) => setTopK(e.target.value)}
+                size="compact"
+                className="w-full"
                 options={[
                   { value: 3, label: '3 Chunks' },
                   { value: 5, label: '5 Chunks' },
@@ -99,9 +104,9 @@ export default function PromptBuilder() {
               <CustomSelect
                 value={templateVersion}
                 onChange={(e) => setTemplateVersion(e.target.value)}
-                options={[
-                  { value: 'rag_prompt_v1', label: 'RAG Prompt v1.0 (Grounded Citations)' },
-                ]}
+                size="compact"
+                className="w-full"
+                options={PROMPT_TEMPLATE_OPTIONS}
               />
             </div>
           </div>
@@ -110,7 +115,7 @@ export default function PromptBuilder() {
             <button
               type="submit"
               disabled={loading || !query.trim()}
-              className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium text-xs shadow-xs transition-all disabled:opacity-50 flex items-center gap-2"
+              className="px-4 py-2 rounded-lg bg-zinc-900 dark:bg-zinc-100 hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-medium text-xs shadow-xs transition-all disabled:opacity-50 flex items-center gap-2 cursor-pointer"
             >
               {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Sparkles className="w-3.5 h-3.5 text-indigo-400" />}
               Build & Minify Prompt
@@ -129,26 +134,33 @@ export default function PromptBuilder() {
       {result && (
         <div className="space-y-4">
           {/* Metadata Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
             <div className="p-3.5 rounded-xl border border-theme bg-card">
               <div className="text-sub text-[11px]">Total Characters</div>
-              <div className="text-base font-bold text-main">{result.metadata?.char_count || result.prompt?.length || 0}</div>
+              <div className="text-base font-bold text-main">{result.character_count || result.metadata?.char_count || result.prompt?.length || 0}</div>
             </div>
 
             <div className="p-3.5 rounded-xl border border-theme bg-card">
               <div className="text-sub text-[11px]">Est. Token Budget</div>
-              <div className="text-base font-bold font-mono text-main">~{result.metadata?.estimated_tokens || 0} tks</div>
+              <div className="text-base font-bold font-mono text-main">~{result.estimated_tokens || result.metadata?.estimated_tokens || 0} tks</div>
             </div>
 
             <div className="p-3.5 rounded-xl border border-theme bg-card">
               <div className="text-sub text-[11px]">Included Chunks</div>
-              <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">{result.metadata?.chunk_count || 0}</div>
+              <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">{result.context_chunk_count ?? result.metadata?.chunk_count ?? 0}</div>
             </div>
 
             <div className="p-3.5 rounded-xl border border-theme bg-card">
-              <div className="text-sub text-[11px]">Build Latency</div>
-              <div className="text-base font-bold font-mono text-main">
-                {((result.metadata?.build_time_seconds || 0) * 1000).toFixed(1)} ms
+              <div className="text-sub text-[11px]">Template Version</div>
+              <div className="text-xs font-bold font-mono text-indigo-600 dark:text-indigo-400 truncate mt-0.5" title={result.template_version}>
+                {result.template_version || templateVersion}
+              </div>
+            </div>
+
+            <div className="col-span-2 sm:col-span-1 p-3.5 rounded-xl border border-theme bg-card">
+              <div className="text-sub text-[11px]">SHA-256 Hash</div>
+              <div className="text-xs font-bold font-mono text-muted-custom truncate mt-0.5" title={result.prompt_hash}>
+                {result.prompt_hash ? result.prompt_hash.substring(0, 10) + '...' : 'N/A'}
               </div>
             </div>
           </div>
@@ -156,19 +168,20 @@ export default function PromptBuilder() {
           {/* Rendered Output */}
           <div className="p-5 rounded-xl border border-theme bg-card">
             <div className="flex justify-between items-center mb-2.5">
-              <span className="text-[11px] font-bold font-mono uppercase tracking-wider text-muted-custom">
-                Final Rendered Prompt Output
+              <span className="text-[11px] font-bold font-mono uppercase tracking-wider text-muted-custom flex items-center gap-1.5">
+                <FileCode2 className="w-3.5 h-3.5 text-indigo-500" />
+                Final Rendered Prompt Output ({result.template_version || templateVersion})
               </span>
               <button
                 onClick={handleCopy}
-                className="px-2.5 py-1 rounded-md border border-theme bg-muted hover:bg-card-hover text-xs font-medium text-main flex items-center gap-1.5 transition-colors"
+                className="px-2.5 py-1 rounded-md border border-theme bg-muted hover:bg-card-hover text-xs font-medium text-main flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? 'Copied' : 'Copy Prompt'}
               </button>
             </div>
 
-            <pre className="p-3.5 rounded-lg font-mono text-xs overflow-x-auto whitespace-pre-wrap leading-relaxed border border-theme bg-muted/60 text-main">
+            <pre className="p-3.5 rounded-lg font-mono text-xs overflow-x-auto whitespace-pre-wrap leading-relaxed border border-theme bg-muted/60 text-main select-all">
               {result.prompt}
             </pre>
           </div>
